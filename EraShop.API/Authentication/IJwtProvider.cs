@@ -1,6 +1,10 @@
-﻿namespace EraShop.API.Authentication
+﻿using EraShop.API.Entities;
+
+namespace EraShop.API.Authentication
 {
 	public interface IJwtProvider
 	{
+		(string token, int expireTime) GenerateToken(ApplicationUser user, string role);
+		string? VaildToken(string token);
 	}
 }
