@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace EraShop.API.Entities
 {
@@ -8,5 +7,6 @@ namespace EraShop.API.Entities
 		public string FirstName { get; set; } = string.Empty;
 		public string LastName { get; set; } = string.Empty;
 		public bool IsDisabled { get; set; }
+		public List<RefreshToken> RefreshTokens { get; set; } = [];
 	}
 }
