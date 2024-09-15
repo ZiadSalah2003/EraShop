@@ -41,7 +41,7 @@ namespace EraShop.API.Authentication
 			return (token: new JwtSecurityTokenHandler().WriteToken(token), expiresIn: _jwtOptions.ExpiryMinutes * 60);
 		}
 
-		public string? VaildToken(string token)
+		public string? ValidateToken(string token)
 		{
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
