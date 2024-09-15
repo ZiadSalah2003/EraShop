@@ -1,6 +1,7 @@
 ﻿using EraShop.API.Authentication;
 using EraShop.API.Entities;
 using EraShop.API.Persistence;
+using EraShop.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace EraShop.API
 			var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection String DefaultConnection not found.");
 			services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
+			services.AddScoped<IAuthService, AuthService>();
 
 			services.AddSwaggerServices();
 			services.AddAuthConfig(configuration);
