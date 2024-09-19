@@ -36,5 +36,26 @@ namespace EraShop.API.Controllers
 			var response = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 			return response.IsSuccess ? Ok() : response.ToProblem();
 		}
-	}
+
+        [HttpPost("sign-up")]
+        public async Task<IActionResult> SignUp([FromBody] SignUpRequest request, CancellationToken cancellationToken)
+        {
+			var response = await _authService.SignUpAsync(request, cancellationToken);
+            return response.IsSuccess ? Ok() : response.ToProblem();
+        }
+
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken cancellationToken)
+        {
+            var response = await _authService.ConfirmEmailAsync(request);
+            return response.IsSuccess ? Ok() : response.ToProblem();
+        }
+
+        [HttpPost("resend-confirmation-email")]
+        public async Task<IActionResult> ResendConfirmationEmailAsync([FromBody] ResendEmailConfirmationRequest request, CancellationToken cancellationToken)
+        {
+            var response = await _authService.ResendConfirmationEmailAsync(request);
+            return response.IsSuccess ? Ok() : response.ToProblem();
+        }
+    }
 }

@@ -1,4 +1,6 @@
 
+using Serilog;
+
 namespace EraShop.API
 {
 	public class Program
@@ -7,9 +9,11 @@ namespace EraShop.API
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-			// Add services to the container.
-
-			builder.Services.AddDependencies(builder.Configuration);
+            // Add services to the container.
+            builder.Host.UseSerilog((context, configuration) =>
+             configuration.ReadFrom.Configuration(context.Configuration)
+              );
+            builder.Services.AddDependencies(builder.Configuration);
 
 			var app = builder.Build();
 
