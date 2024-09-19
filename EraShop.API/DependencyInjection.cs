@@ -2,11 +2,16 @@
 using EraShop.API.Entities;
 using EraShop.API.Persistence;
 using EraShop.API.Services;
+using EraShop.API.Settings;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 namespace EraShop.API
@@ -21,9 +26,18 @@ namespace EraShop.API
 			services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
 			services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEmailSender, EmailService>();
 
-			services.AddSwaggerServices();
+
+            services.AddSwaggerServices();
 			services.AddAuthConfig(configuration);
+			services.AddMapsterConfig();
+
+			services.AddHttpContextAccessor();
+
+			// mapping MailSettings
+
+			services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 
 			return services;
 		}
@@ -36,7 +50,17 @@ namespace EraShop.API
 			return services;
 		}
 
-		private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
+        {
+            var mappingConfig = TypeAdapterConfig.GlobalSettings;
+            mappingConfig.Scan(Assembly.GetExecutingAssembly());
+
+            services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+
+            return services;
+        }
+
+        private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
 		{
 			services.AddIdentity<ApplicationUser, ApplicationRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
@@ -68,10 +92,12 @@ namespace EraShop.API
 				});
 			services.Configure<IdentityOptions>(options =>
 			{
-				options.Password.RequiredLength = 6;
+				options.Password.RequiredLength = 8;
 				options.SignIn.RequireConfirmedEmail = true;
 				options.User.RequireUniqueEmail = true;
-			});
+                options.User.AllowedUserNameCharacters =
+                       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+            });
 
 			return services;
 		}
