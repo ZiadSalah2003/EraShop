@@ -10,6 +10,9 @@ namespace EraShop.API.Services
 		Task<Result> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken = default);
         Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request);
 		Task<Result> ResendConfirmationEmailAsync(ResendEmailConfirmationRequest request);
+		Task<Result> SendResetPasswordCodeAsync(string email);
+		Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
 
-    }
+
+	}
 }
