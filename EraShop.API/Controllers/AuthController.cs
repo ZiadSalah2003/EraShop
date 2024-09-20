@@ -57,5 +57,18 @@ namespace EraShop.API.Controllers
             var response = await _authService.ResendConfirmationEmailAsync(request);
             return response.IsSuccess ? Ok() : response.ToProblem();
         }
-    }
+
+		[HttpPost("forget-password")]
+		public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswrodRequest request)
+		{
+			var response = await _authService.SendResetPasswordCodeAsync(request.Email);
+			return response.IsSuccess ? Ok() : response.ToProblem();
+		}
+		[HttpPost("reset-password")]
+		public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+		{
+			var response = await _authService.ResetPasswordAsync(request);
+			return response.IsSuccess ? Ok() : response.ToProblem();
+		}
+	}
 }

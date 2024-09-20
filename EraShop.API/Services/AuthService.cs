@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using System.Security.Cryptography;
 using System.Text;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
@@ -184,23 +185,63 @@ namespace EraShop.API.Services
             return Result.Success();
         }
 
-		private async Task SendConfirmationEmail(ApplicationUser user , string code)
+		public async Task<Result> SendResetPasswordCodeAsync(string email)
 		{
+			var user = await _userManager.FindByEmailAsync(email);
+			if (user is null)
+				return Result.Success();
 
-            var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+			if (!user.EmailConfirmed)
+				return Result.Failure(UserErrors.EmailNotConfirmed);
 
-            var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+			var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+			code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+			_logger.LogInformation("Reset Password Code: {code}", code);
+			await SendConfirmationEmail(user, code);
+			return Result.Success();
+		}
 
-                new Dictionary<string, string>
-                {
-                    { "{{name}}" ,user.FirstName },
-                        { "{{action_url}}" ,$"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
-                }
+		public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+		{
+			var user = await _userManager.FindByEmailAsync(request.Email);
+			if (user is null || !user.EmailConfirmed)
+				return Result.Failure(UserErrors.InvalidCode);
+			IdentityResult result;
+			try
+			{
+				var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+				result = await _userManager.ResetPasswordAsync(user, code, request.NewPassword);
+			}
+			catch (FormatException)
+			{
+				result = IdentityResult.Failed(_userManager.ErrorDescriber.InvalidToken());
+			}
 
-                );
+			if (result.Succeeded)
+				return Result.Success();
 
-            await _emailSender.SendEmailAsync(user.Email!, "✅ EraShop: Email Confirmation", emailBody);
-        }
+			var error = result.Errors.First();
+			return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
+
+
+		}
+			private async Task SendConfirmationEmail(ApplicationUser user , string code)
+			{
+
+				var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+				var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+
+					new Dictionary<string, string>
+					{
+						{ "{{name}}" ,user.FirstName },
+							{ "{{action_url}}" ,$"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
+					}
+
+				);
+
+				await _emailSender.SendEmailAsync(user.Email!, "✅ EraShop: Email Confirmation", emailBody);
+			}
 
     }
 }
