@@ -28,55 +28,55 @@ namespace EraShop.API.Services
 		private readonly int _refreshTokenExpiryDays = 7;
 		private readonly ILogger<AuthService> _logger;
 		private readonly IEmailSender _emailSender;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+		private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(UserManager<ApplicationUser> userManager,
+		public AuthService(UserManager<ApplicationUser> userManager,
 			   ApplicationDbContext context, IJwtProvider jwtProvider,
-			   SignInManager<ApplicationUser> signInManager ,
+			   SignInManager<ApplicationUser> signInManager,
 			   ILogger<AuthService> logger,
-			   IEmailSender emailSender ,
-              IHttpContextAccessor httpContextAccessor)
-        {
-            _userManager = userManager;
-            _context = context;
-            _jwtProvider = jwtProvider;
-            _signInManager = signInManager;
-			_logger = logger;
-			_emailSender = emailSender;	
-			_httpContextAccessor = httpContextAccessor;
-        }
-
-        public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
+			   IEmailSender emailSender,
+			  IHttpContextAccessor httpContextAccessor)
 		{
-           
-            if (await _userManager.FindByEmailAsync(email) is not { } user)
-                return Result.Failure<AuthResponse>(UserErrors.InvalidCredentails);
+			_userManager = userManager;
+			_context = context;
+			_jwtProvider = jwtProvider;
+			_signInManager = signInManager;
+			_logger = logger;
+			_emailSender = emailSender;
+			_httpContextAccessor = httpContextAccessor;
+		}
 
-            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+		public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
+		{
 
-            if (result.Succeeded)
-            {
-                var userRole = await GetUserRole(user, cancellationToken);
-                var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRole);
+			if (await _userManager.FindByEmailAsync(email) is not { } user)
+				return Result.Failure<AuthResponse>(UserErrors.InvalidCredentails);
 
-                var refreshToken = GenerateRefreshToken();
-                var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+			var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
 
-                user.RefreshTokens.Add(new RefreshToken
-                {
-                    Token = refreshToken,
-                    ExpiresOn = refreshTokenExpiration
-                });
+			if (result.Succeeded)
+			{
+				var userRole = await GetUserRole(user, cancellationToken);
+				var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRole);
 
-                await _userManager.UpdateAsync(user);
+				var refreshToken = GenerateRefreshToken();
+				var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
 
-                var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpiration);
+				user.RefreshTokens.Add(new RefreshToken
+				{
+					Token = refreshToken,
+					ExpiresOn = refreshTokenExpiration
+				});
 
-                return Result.Success(response);
-            }
+				await _userManager.UpdateAsync(user);
 
-            return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredentails);
-        }
+				var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpiration);
+
+				return Result.Success(response);
+			}
+
+			return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredentails);
+		}
 
 		public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
 		{
@@ -109,33 +109,33 @@ namespace EraShop.API.Services
 			return userRoles.FirstOrDefault()!;
 		}
 
-        public async Task<Result> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken = default)
-        {
-            var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken);
+		public async Task<Result> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken = default)
+		{
+			var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken);
 
 			if (emailIsExist)
 				return Result.Failure(UserErrors.DublicatedEmail);
 
 			var user = request.Adapt<ApplicationUser>();
 
-			var result = await _userManager.CreateAsync(user,request.Password);
+			var result = await _userManager.CreateAsync(user, request.Password);
 
 			if (result.Succeeded)
 			{
 				var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                _logger.LogInformation("Confirmation Code: {code}", code);
+				code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+				_logger.LogInformation("Confirmation Code: {code}", code);
 				await SendConfirmationEmail(user, code);
-                return Result.Success();
+				return Result.Success();
 
 			}
 
 
-            var error = result.Errors.First();
+			var error = result.Errors.First();
 
-            return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+			return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
 
-        }
+		}
 
 		public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request)
 		{
@@ -167,23 +167,23 @@ namespace EraShop.API.Services
 
 		}
 
-        public async Task<Result> ResendConfirmationEmailAsync(ResendEmailConfirmationRequest request)
+		public async Task<Result> ResendConfirmationEmailAsync(ResendEmailConfirmationRequest request)
 		{
-            if (await _userManager.FindByEmailAsync(request.Email) is not { } user)
-                return Result.Success();
+			if (await _userManager.FindByEmailAsync(request.Email) is not { } user)
+				return Result.Success();
 
-            if (user.EmailConfirmed)
-                return Result.Failure(UserErrors.DuplicatedConfirmation);
+			if (user.EmailConfirmed)
+				return Result.Failure(UserErrors.DuplicatedConfirmation);
 
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+			var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+			code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 			_logger.LogInformation("Confirmation Code: {code}", code);
 
-           await SendConfirmationEmail(user, code);
+			await SendConfirmationEmail(user, code);
 
 
-            return Result.Success();
-        }
+			return Result.Success();
+		}
 
 		public async Task<Result> SendResetPasswordCodeAsync(string email)
 		{
@@ -225,23 +225,23 @@ namespace EraShop.API.Services
 
 
 		}
-			private async Task SendConfirmationEmail(ApplicationUser user , string code)
-			{
+		private async Task SendConfirmationEmail(ApplicationUser user, string code)
+		{
 
-				var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+			var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
 
-				var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+			var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
 
-					new Dictionary<string, string>
-					{
+				new Dictionary<string, string>
+				{
 						{ "{{name}}" ,user.FirstName },
 							{ "{{action_url}}" ,$"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
-					}
+				}
 
-				);
+			);
 
-				await _emailSender.SendEmailAsync(user.Email!, "✅ EraShop: Email Confirmation", emailBody);
-			}
+			await _emailSender.SendEmailAsync(user.Email!, "✅ EraShop: Email Confirmation", emailBody);
+		}
 
-    }
+	}
 }

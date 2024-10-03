@@ -20,6 +20,15 @@ namespace EraShop.API
 	{
 		public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
 		{
+			services.AddCors(options =>
+				options.AddDefaultPolicy(builder =>
+				builder
+					.AllowAnyMethod()
+					.AllowAnyHeader()
+					.AllowAnyOrigin()
+				)
+			);
+
 			services.AddControllers();
 
 			var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection String DefaultConnection not found.");
