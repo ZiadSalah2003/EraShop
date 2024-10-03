@@ -26,6 +26,7 @@ namespace EraShop.API
 
 			app.UseHttpsRedirection();
 
+			app.UseCors();
 			app.UseAuthorization();
 
 
