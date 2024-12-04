@@ -20,7 +20,7 @@ namespace EraShop.API.Controllers
 		public async Task<IActionResult> Login([FromBody] LoginRequest request,CancellationToken cancellationToken)
 		{
 			var response = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
-			return response.IsSuccess ? Ok(response.Value) : response.ToProblem();
+			return response.IsSuccess ?  Ok(response.Value) : response.ToProblem();
 		}
 
 		[HttpPost("refresh-token")]
