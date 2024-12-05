@@ -41,6 +41,7 @@ namespace EraShop.API
             services.AddSwaggerServices();
 			services.AddAuthConfig(configuration);
 			services.AddMapsterConfig();
+			services.AddScoped<ICategoryService,CategoryService>();
 
 			services.AddHttpContextAccessor();
 
