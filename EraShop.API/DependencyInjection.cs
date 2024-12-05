@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
-
+using Microsoft.OpenApi.Models;
 namespace EraShop.API
 {
 	public static class DependencyInjection
@@ -36,6 +36,10 @@ namespace EraShop.API
 
 			services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailSender, EmailService>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IBrandService,BrandService>();
+
+
 
 
             services.AddSwaggerServices();
@@ -54,7 +58,31 @@ namespace EraShop.API
 		{
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			services.AddEndpointsApiExplorer();
-			services.AddSwaggerGen();
+			services.AddSwaggerGen(options =>
+			{
+				options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme
+				{
+					Name = "Authorization",
+					Description = "Enter the Bearer Authroization : `Bearer Generated-JWT-Token`",
+					In = ParameterLocation.Header,
+					Type = SecuritySchemeType.ApiKey,
+					Scheme = "Bearer"
+				});
+
+				options.AddSecurityRequirement(new OpenApiSecurityRequirement
+				{
+					{
+					new OpenApiSecurityScheme
+					{
+						Reference = new OpenApiReference
+						{
+							Type = ReferenceType.SecurityScheme,
+							Id = JwtBearerDefaults.AuthenticationScheme
+						}
+					}, new string []{}
+					}
+				});
+			});
 
 			return services;
 		}
