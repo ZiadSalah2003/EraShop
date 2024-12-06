@@ -2,8 +2,8 @@
 {
     public interface IFileService
     {
-        Task<string> SaveFileAsync(IFormFile imageFile, string[] allowedFileExtensions);
-        void DeleteFile(string file);
+		Task<string> SaveFileAsync(IFormFile imageFile, string[] allowedFileExtensions, string subfolder);
+		void DeleteFile(string file, string subfolder);
 
-    }
+	}
 }
