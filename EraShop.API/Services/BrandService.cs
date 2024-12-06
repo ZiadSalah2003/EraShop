@@ -1,8 +1,6 @@
 ﻿using EraShop.API.Abstractions;
-using EraShop.API.Abstractions.Consts;
 using EraShop.API.Contracts.Brands;
 using EraShop.API.Entities;
-using EraShop.API.Errors;
 using EraShop.API.Persistence;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +16,11 @@ namespace EraShop.API.Services
         {
             if (request.Image?.Length > 1 * 1024 * 1024)
             {
-                return Result.Failure(BrandErrors.BrandImageExcced1M);
+                return Result.Failure(new Error("invalidFileSize", "File Size shouldn't exceed 1MB", StatusCodes.Status400BadRequest));
             }
 
             string[] allowedFileExtensions = [".jpg", ".jpeg", ".png"];
-            string createdImageName = await _fileService.SaveFileAsync(request.Image!, allowedFileExtensions, ImageSubFolder.Brand);
+            string createdImageName = await _fileService.SaveFileAsync(request.Image!, allowedFileExtensions);
 
             var createdBrand = new Brand
             {
