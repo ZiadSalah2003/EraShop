@@ -5,7 +5,7 @@ namespace EraShop.API.Services
     {
         private readonly IWebHostEnvironment _environment = environment;
 
-        public async Task<string> SaveFileAsync(IFormFile imageFile, string[] allowedFileExtensions)
+        public async Task<string> SaveFileAsync(IFormFile imageFile, string[] allowedFileExtensions, string folderName)
         {
             if (imageFile is null)
             {
@@ -13,7 +13,7 @@ namespace EraShop.API.Services
             }
 
             var contentPath = _environment.ContentRootPath;
-            var path = Path.Combine(contentPath, "Uploads");
+            var path = Path.Combine(contentPath, "Uploads", folderName);
 
             // Ensure the directory exists
             if (!Directory.Exists(path))
@@ -39,7 +39,7 @@ namespace EraShop.API.Services
             return fileName; // Return the saved file name
         }
 
-        public void DeleteFile(string file)
+        public void DeleteFile(string file, string folderName)
         {
            if(string.IsNullOrEmpty(file))
             {
@@ -48,7 +48,7 @@ namespace EraShop.API.Services
 
            var contentPath = _environment.ContentRootPath;
 
-            var path = Path.Combine(contentPath, $"Uploads", file);
+            var path = Path.Combine(contentPath, $"Uploads", folderName, file);
 
             if(!File.Exists(path))
             {

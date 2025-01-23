@@ -64,8 +64,8 @@ namespace EraShop.API.Services
 			if (updatedCategory is null)
 				return Result.Failure(CategoryErrors.CategoryNotFound);
 
-			//updatedCategory.Name = request.Name;
-			var category = updatedCategory.Adapt<Category>();
+			updatedCategory.Name = request.Name;
+			//var category = updatedCategory.Adapt<Category>();
 			await _context.SaveChangesAsync(cancellationToken);
 			return Result.Success();
 		}

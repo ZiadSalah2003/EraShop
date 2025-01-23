@@ -27,7 +27,7 @@ namespace EraShop.API.Authentication
 				new(JwtRegisteredClaimNames.GivenName,user.FirstName),
 				new(JwtRegisteredClaimNames.FamilyName,user.LastName),
 				new(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-				new(nameof(role),JsonSerializer.Serialize(role))
+				new(nameof(role),JsonSerializer.Serialize(role),JsonClaimValueTypes.JsonArray)
 			};
 			var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
 			var singingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);

@@ -1,6 +1,8 @@
 ﻿using EraShop.API.Abstractions;
+using EraShop.API.Abstractions.Consts;
 using EraShop.API.Contracts.Categories;
 using EraShop.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +10,8 @@ namespace EraShop.API.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class CategoryController : ControllerBase
+    [Authorize(Roles = DefaultRoles.Admin)]
+    public class CategoryController : ControllerBase
 	{
 		private readonly ICategoryService _categoryService;
 		public CategoryController(ICategoryService categoryService)
@@ -31,7 +34,7 @@ namespace EraShop.API.Controllers
 		public async Task<IActionResult> AddCategory([FromBody] CategoryRequest request)
 		{
 			var response = await _categoryService.AddAsync(request);
-			return response.IsSuccess ? Ok(response.Value) : response.ToProblem();
+			return response.IsSuccess ? CreatedAtAction(nameof(GetCategory), new {id = response.Value.Id } , response.Value) : response.ToProblem();
 		}
 		[HttpPut("{id}")]
 		public async Task<IActionResult> UpdateCategory([FromRoute] int id, [FromBody] CategoryRequest request, CancellationToken cancellationToken)
@@ -39,7 +42,7 @@ namespace EraShop.API.Controllers
 			var response = await _categoryService.UpdateAsync(id, request, cancellationToken);
 			return response.IsSuccess ? Ok() : response.ToProblem();
 		}
-		[HttpPut("{id}/toggle-status")]
+		[HttpPut("toggle-status/{id}")]
 		public async Task<IActionResult> ToggleStatus([FromRoute] int id, CancellationToken cancellationToken)
 		{
 			var response = await _categoryService.ToggleStatus(id, cancellationToken);
