@@ -38,14 +38,16 @@ namespace EraShop.API
             services.AddScoped<IEmailSender, EmailService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IBrandService,BrandService>();
+			services.AddScoped<ICategoryService, CategoryService>();
+			services.AddScoped<IProductService, ProductService>();
 
 
 
 
-            services.AddSwaggerServices();
+			services.AddSwaggerServices();
 			services.AddAuthConfig(configuration);
 			services.AddMapsterConfig();
-			services.AddScoped<ICategoryService,CategoryService>();
+			
 
 			services.AddHttpContextAccessor();
 

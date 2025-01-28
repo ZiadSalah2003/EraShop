@@ -1,4 +1,5 @@
 ﻿using EraShop.API.Abstractions;
+using EraShop.API.Abstractions.Consts;
 using EraShop.API.Contracts.Brands;
 using EraShop.API.Entities;
 using EraShop.API.Errors;
@@ -30,7 +31,7 @@ namespace EraShop.API.Services
 
             if (request.Image?.Length > 1 * 1024 * 1024)
             {
-                return Result.Failure(new Error("invalidFileSize", "File Size shouldn't exceed 1MB", StatusCodes.Status400BadRequest));
+                return Result.Failure(BrandErrors.BrandImageExcced1M);
             }
 
             string[] allowedFileExtensions = [".jpg", ".jpeg", ".png"];

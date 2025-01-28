@@ -1,6 +1,1 @@
-﻿namespace EraShop.API
-{
-	public class GlobalUsing
-	{
-	}
-}
+﻿global using Microsoft.EntityFrameworkCore;
