@@ -6,6 +6,7 @@ using EraShop.API.Entities;
 using EraShop.API.Errors;
 using EraShop.API.Helpers;
 using EraShop.API.Persistence;
+using Hangfire;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -125,8 +126,11 @@ namespace EraShop.API.Services
 				var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 				code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 				_logger.LogInformation("Confirmation Code: {code}", code);
+
+				
 				await SendConfirmationEmail(user, code);
-				return Result.Success();
+
+                return Result.Success();
 
 			}
 
@@ -240,7 +244,9 @@ namespace EraShop.API.Services
 
 			);
 
-			await _emailSender.SendEmailAsync(user.Email!, "✅ EraShop: Email Confirmation", emailBody);
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ EraShop: Email Confirmation", emailBody));
+
+            await Task.CompletedTask;
 		}
 
 	}

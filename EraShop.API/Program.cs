@@ -1,4 +1,6 @@
 
+using Hangfire;
+using HangfireBasicAuthenticationFilter;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
 
@@ -33,7 +35,20 @@ namespace EraShop.API
 					"Uploads")),
 				RequestPath ="/Resources"
 			});
-			app.UseCors();
+
+            app.UseHangfireDashboard("/jobs", new DashboardOptions
+            {
+                Authorization =
+                  [
+						 new HangfireCustomBasicAuthenticationFilter
+						{
+							User = app.Configuration.GetValue<string>("HangfireSettings:UserName"),
+							Pass =app.Configuration.GetValue<string>("HangfireSettings:Password")
+						}
+                  ],
+                DashboardTitle = "EraShop Dashboard"
+            });
+            app.UseCors();
 			app.UseAuthorization();
 
 

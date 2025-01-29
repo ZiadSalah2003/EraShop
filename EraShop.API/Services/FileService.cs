@@ -39,7 +39,7 @@ namespace EraShop.API.Services
 			return fileName; // Return the saved file name
 		}
 
-        public void DeleteFile(string file)
+        public void DeleteFile(string file, string subfolder)
         {
            if(string.IsNullOrEmpty(file))
             {
