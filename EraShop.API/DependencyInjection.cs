@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 namespace EraShop.API
 {
 	public static class DependencyInjection
@@ -40,12 +41,14 @@ namespace EraShop.API
             services.AddScoped<IBrandService,BrandService>();
 			services.AddScoped<ICategoryService, CategoryService>();
 			services.AddScoped<IProductService, ProductService>();
+			services.AddScoped<IBasketService, BasketService>();
 
 
 
 
 			services.AddSwaggerServices();
 			services.AddAuthConfig(configuration);
+			services.ReddisConfiguration(configuration);
 			services.AddMapsterConfig();
 			
 
@@ -100,7 +103,18 @@ namespace EraShop.API
             return services;
         }
 
-        private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
+		private static IServiceCollection ReddisConfiguration(this IServiceCollection services, IConfiguration configuration)
+		{
+			services.AddSingleton(typeof(IConnectionMultiplexer), servicesProvider =>
+			{
+				var connectionString = configuration.GetConnectionString("Redis");
+				var connectionMultiplexerObj = ConnectionMultiplexer.Connect(connectionString!);
+				return connectionMultiplexerObj;
+			});
+			return services;
+		}
+
+		private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
 		{
 			services.AddIdentity<ApplicationUser, ApplicationRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
