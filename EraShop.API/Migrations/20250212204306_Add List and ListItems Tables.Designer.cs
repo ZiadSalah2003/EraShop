@@ -4,6 +4,7 @@ using EraShop.API.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250212204306_Add List and ListItems Tables")]
+    partial class AddListandListItemsTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,7 +169,7 @@ namespace EraShop.API.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ERA-SHOP.COM",
                             NormalizedUserName = "ADMIN@ERA-SHOP.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEK2Kc8lS82NgHqfJWwfOjFlcQZQQWzaHR02/KWFakPIXf34Eh6A9r8TLj7zoIbk5ug==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKtEBhCf6fRdqaw3DvI47/Px6bWb5sOYM0kYRx0f+OXqCX0Ia6+FjWftMvRNp++iJg==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,
@@ -212,7 +215,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Brands", (string)null);
+                    b.ToTable("Brands");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Category", b =>
@@ -250,7 +253,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.List", b =>
@@ -272,12 +275,12 @@ namespace EraShop.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Name", "UserId")
+                    b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Lists", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Lists");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.ListItem", b =>
@@ -301,7 +304,7 @@ namespace EraShop.API.Migrations
                     b.HasIndex("ListId", "ProductId")
                         .IsUnique();
 
-                    b.ToTable("ListItems", (string)null);
+                    b.ToTable("ListItems");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
@@ -372,7 +375,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Review", b =>
@@ -407,7 +410,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -518,7 +521,7 @@ namespace EraShop.API.Migrations
 
             modelBuilder.Entity("EraShop.API.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("EraShop.API.Entities.ApplicationUser.RefreshTokens#EraShop.API.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("EraShop.API.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("UserId")
                                 .HasColumnType("nvarchar(450)");

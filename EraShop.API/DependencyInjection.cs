@@ -16,6 +16,8 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using Hangfire;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 namespace EraShop.API
 {
 	public static class DependencyInjection
@@ -44,6 +46,8 @@ namespace EraShop.API
 			services.AddScoped<IProductService, ProductService>();
 			services.AddScoped<IBasketService, BasketService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IWishListService, WishListService>();
+
 
 
 
@@ -51,6 +55,7 @@ namespace EraShop.API
 			services.AddAuthConfig(configuration);
 			services.ReddisConfiguration(configuration);
 			services.AddMapsterConfig();
+			services.AddFluentValidationConfig();
 			
 
 			services.AddHttpContextAccessor();
@@ -65,6 +70,7 @@ namespace EraShop.API
 		{
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			services.AddEndpointsApiExplorer();
+			
 			services.AddSwaggerGen(options =>
 			{
 				options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme
@@ -90,9 +96,19 @@ namespace EraShop.API
 					}
 				});
 			});
+			
 
 			return services;
 		}
+
+        private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
+        {
+            services
+                .AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+            return services;
+        }
 
         private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
         {

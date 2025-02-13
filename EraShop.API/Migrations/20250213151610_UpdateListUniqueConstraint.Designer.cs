@@ -4,6 +4,7 @@ using EraShop.API.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250213151610_UpdateListUniqueConstraint")]
+    partial class UpdateListUniqueConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -212,7 +215,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Brands", (string)null);
+                    b.ToTable("Brands");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Category", b =>
@@ -250,7 +253,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.List", b =>
@@ -277,7 +280,7 @@ namespace EraShop.API.Migrations
                     b.HasIndex("Name", "UserId")
                         .IsUnique();
 
-                    b.ToTable("Lists", (string)null);
+                    b.ToTable("Lists");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.ListItem", b =>
@@ -301,7 +304,7 @@ namespace EraShop.API.Migrations
                     b.HasIndex("ListId", "ProductId")
                         .IsUnique();
 
-                    b.ToTable("ListItems", (string)null);
+                    b.ToTable("ListItems");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
@@ -372,7 +375,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Review", b =>
@@ -407,7 +410,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -518,7 +521,7 @@ namespace EraShop.API.Migrations
 
             modelBuilder.Entity("EraShop.API.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("EraShop.API.Entities.ApplicationUser.RefreshTokens#EraShop.API.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("EraShop.API.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("UserId")
                                 .HasColumnType("nvarchar(450)");
