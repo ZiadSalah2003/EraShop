@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241205202243_AddImageColumnInBrandTable")]
-    partial class AddImageColumnInBrandTable
+    [Migration("20250214025141_AddTablesProductBrandCategoryAndReview")]
+    partial class AddTablesProductBrandCategoryAndReview
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,7 +169,7 @@ namespace EraShop.API.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ERA-SHOP.COM",
                             NormalizedUserName = "ADMIN@ERA-SHOP.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAED2XBrDiOSE5wPYkQBXFi2yAxeFzBcGQwfMna00c5VMMNgBkauj0zTOKGDsVZJu07w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECZlKzBqHf8pYDpYW5yCVW12pjgCkKSp8DI7G9oNMw+T3/Qf/EjWzfrBBW72K99H1w==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,
@@ -267,13 +267,7 @@ namespace EraShop.API.Migrations
                     b.Property<int?>("BrandId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BrandId1")
-                        .HasColumnType("int");
-
                     b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CategoryId1")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedById")
@@ -314,11 +308,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.HasIndex("BrandId1");
-
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("CategoryId1");
 
                     b.HasIndex("CreatedById");
 
@@ -542,20 +532,14 @@ namespace EraShop.API.Migrations
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
                 {
                     b.HasOne("EraShop.API.Entities.Brand", "Brand")
-                        .WithMany()
-                        .HasForeignKey("BrandId");
-
-                    b.HasOne("EraShop.API.Entities.Brand", null)
                         .WithMany("Products")
-                        .HasForeignKey("BrandId1");
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("EraShop.API.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId");
-
-                    b.HasOne("EraShop.API.Entities.Category", null)
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId1");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
