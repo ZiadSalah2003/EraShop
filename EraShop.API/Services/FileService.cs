@@ -38,10 +38,12 @@ namespace EraShop.API.Services
 			return fileName;
 		}
 
+
 		public void DeleteFile(string file, string subfolder)
 		{
 			if (string.IsNullOrEmpty(file))
 				throw new ArgumentNullException(nameof(File));
+
 
 			var path = Path.Combine(_imagesPath, subfolder, file);
 

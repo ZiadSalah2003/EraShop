@@ -1,4 +1,6 @@
 
+using Hangfire;
+using HangfireBasicAuthenticationFilter;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
 

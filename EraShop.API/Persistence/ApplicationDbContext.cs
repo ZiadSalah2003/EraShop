@@ -35,6 +35,9 @@ namespace EraShop.API.Persistence
 		public DbSet<OrderItem> OrderItems { get; set; }
 		public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
 		public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public DbSet<List> Lists { get; set; }
+        public DbSet<ListItem> ListItems { get; set; }
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
 		{
 			var entries = ChangeTracker.Entries<AuditableEntity>();
 			foreach (var entityEntry in entries)

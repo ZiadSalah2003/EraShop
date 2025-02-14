@@ -4,6 +4,7 @@ using EraShop.API.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250212204306_Add List and ListItems Tables")]
+    partial class AddListandListItemsTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,9 +169,7 @@ namespace EraShop.API.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ERA-SHOP.COM",
                             NormalizedUserName = "ADMIN@ERA-SHOP.COM",
-
-                            PasswordHash = "AQAAAAIAAYagAAAAEM5/NTHkkKG/HpE/08AF7HkB3tf0wwKk9FdLPU0O0l4BrigwErkB0N0eU4mgMRWWzw==",
-
+                            PasswordHash = "AQAAAAIAAYagAAAAEKtEBhCf6fRdqaw3DvI47/Px6bWb5sOYM0kYRx0f+OXqCX0Ia6+FjWftMvRNp++iJg==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,
@@ -214,7 +215,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Brands", (string)null);
+                    b.ToTable("Brands");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Category", b =>
@@ -252,7 +253,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.List", b =>
@@ -274,12 +275,12 @@ namespace EraShop.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Name", "UserId")
+                    b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Lists", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Lists");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.ListItem", b =>
@@ -303,163 +304,7 @@ namespace EraShop.API.Migrations
                     b.HasIndex("ListId", "ProductId")
                         .IsUnique();
 
-                    b.ToTable("ListItems", (string)null);
-                });
-
-            modelBuilder.Entity("EraShop.API.Entities.DeliveryMethod", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(8,2)");
-
-                    b.Property<string>("DeliveryTime")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShortName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeliveryMethods");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 4,
-                            Cost = 0m,
-                            DeliveryTime = "1-2 Weeks",
-                            Description = "Free! you get what you pay for",
-                            ShortName = "Free"
-                        },
-                        new
-                        {
-                            Id = 1,
-                            Cost = 10m,
-                            DeliveryTime = "1-2 Days",
-                            Description = "Fastest delivery time",
-                            ShortName = "UPS1"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Cost = 5m,
-                            DeliveryTime = "2-5 Days",
-                            Description = "Get it within 5 days",
-                            ShortName = "UPS2"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Cost = 2m,
-                            DeliveryTime = "5-10 Days",
-                            Description = "Slower but cheap",
-                            ShortName = "UPS3"
-                        });
-                });
-
-            modelBuilder.Entity("EraShop.API.Entities.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BuyerEmail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DeliveryMethodId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentIntentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(8,2)");
-
-                    b.Property<string>("UpdatedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("DeliveryMethodId");
-
-                    b.HasIndex("UpdatedById");
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("EraShop.API.Entities.OrderItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(8,2)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UpdatedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("UpdatedById");
-
-                    b.ToTable("OrderItems");
+                    b.ToTable("ListItems");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
@@ -473,7 +318,13 @@ namespace EraShop.API.Migrations
                     b.Property<int?>("BrandId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BrandId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CategoryId1")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedById")
@@ -514,13 +365,17 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("BrandId");
 
+                    b.HasIndex("BrandId1");
+
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CategoryId1");
 
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Review", b =>
@@ -555,7 +410,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -666,7 +521,7 @@ namespace EraShop.API.Migrations
 
             modelBuilder.Entity("EraShop.API.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("EraShop.API.Entities.ApplicationUser.RefreshTokens#EraShop.API.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("EraShop.API.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("UserId")
                                 .HasColumnType("nvarchar(450)");
@@ -735,128 +590,53 @@ namespace EraShop.API.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("EraShop.API.Entities.Order", b =>
-
+            modelBuilder.Entity("EraShop.API.Entities.List", b =>
                 {
-                    b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
+                    b.HasOne("EraShop.API.Entities.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("CreatedById")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EraShop.API.Entities.DeliveryMethod", "DeliveryMethod")
-                        .WithMany()
-                        .HasForeignKey("DeliveryMethodId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EraShop.API.Entities.ApplicationUser", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById");
-
-                    b.OwnsOne("EraShop.API.Entities.Address", "ShippingAddress", b1 =>
-                        {
-                            b1.Property<int>("OrderId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("FirstName")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("LastName")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Street")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("OrderId");
-
-                            b1.ToTable("Orders");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrderId");
-                        });
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("DeliveryMethod");
-
-                    b.Navigation("ShippingAddress")
-                        .IsRequired();
-
-                    b.Navigation("UpdatedBy");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EraShop.API.Entities.OrderItem", b =>
+            modelBuilder.Entity("EraShop.API.Entities.ListItem", b =>
                 {
-                    b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
+                    b.HasOne("EraShop.API.Entities.List", "List")
+                        .WithMany("Items")
+                        .HasForeignKey("ListId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EraShop.API.Entities.Order", null)
-                        .WithMany("Items")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("EraShop.API.Entities.ApplicationUser", "UpdatedBy")
+                    b.HasOne("EraShop.API.Entities.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("UpdatedById");
-
-                    b.OwnsOne("EraShop.API.Entities.ProductItemOrdered", "Product", b1 =>
-                        {
-                            b1.Property<int>("OrderItemId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("PictureUrl")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<int>("ProductId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("ProductName")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("OrderItemId");
-
-                            b1.ToTable("OrderItems");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrderItemId");
-                        });
-
-                    b.Navigation("CreatedBy");
-
-                    b.Navigation("Product")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("UpdatedBy");
+                    b.Navigation("List");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
                 {
                     b.HasOne("EraShop.API.Entities.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId");
+
+                    b.HasOne("EraShop.API.Entities.Brand", null)
                         .WithMany("Products")
-                        .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("BrandId1");
 
                     b.HasOne("EraShop.API.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("EraShop.API.Entities.Category", null)
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("CategoryId1");
 
                     b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
@@ -955,9 +735,7 @@ namespace EraShop.API.Migrations
                     b.Navigation("Products");
                 });
 
-
-            modelBuilder.Entity("EraShop.API.Entities.Order", b =>
-
+            modelBuilder.Entity("EraShop.API.Entities.List", b =>
                 {
                     b.Navigation("Items");
                 });
