@@ -26,13 +26,7 @@ namespace EraShop.API
 			}
 
 			app.UseHttpsRedirection();
-			app.UseStaticFiles( new StaticFileOptions
-			{
-				FileProvider = new PhysicalFileProvider(
-					Path.Combine(builder.Environment.ContentRootPath,
-					"Uploads")),
-				RequestPath ="/Resources"
-			});
+			app.UseStaticFiles();
 			app.UseCors();
 			app.UseAuthorization();
 
