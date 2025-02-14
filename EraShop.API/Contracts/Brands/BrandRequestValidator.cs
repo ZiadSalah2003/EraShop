@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using EraShop.API.Contracts.Files;
+using FluentValidation;
 
 namespace EraShop.API.Contracts.Brands
 {
@@ -11,9 +12,9 @@ namespace EraShop.API.Contracts.Brands
                 .NotNull()
                 .MaximumLength(100);
 
-            RuleFor(x => x.Image)
-                  .NotEmpty()
-                  .NotNull();
-        }
+			RuleFor(x => x.Image)
+				.SetValidator(new BlockedSignaturesValidator()!)
+				.SetValidator(new FileSizeValidator()!);
+		}
     }
 }
