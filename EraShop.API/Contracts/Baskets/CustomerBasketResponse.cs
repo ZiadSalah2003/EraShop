@@ -3,6 +3,10 @@
 	public record CustomerBasketResponse
 	(
 		string Id,
-		IEnumerable<BasketItemResponse> Items
+		IEnumerable<BasketItemResponse> Items,
+		string? PaymentIntentId,
+		string? ClientSecret,
+		int? DeliveryMethodId,
+		decimal ShippingPrice
 	);
 }
