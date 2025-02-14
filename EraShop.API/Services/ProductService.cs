@@ -13,11 +13,14 @@ namespace EraShop.API.Services
 		private readonly ApplicationDbContext _context;
 		private readonly IFileService _fileService;
 		private readonly IHttpContextAccessor _httpContextAccessor;
-		public ProductService(ApplicationDbContext context, IFileService fileService, IHttpContextAccessor httpContextAccessor)
+    private readonly INotificationService _notificationService;
+		public ProductService(ApplicationDbContext context, IFileService fileService, IHttpContextAccessor httpContextAccessor , INotificationService notificationService)
 		{
 			_context = context;
 			_fileService = fileService;
 			_httpContextAccessor = httpContextAccessor;
+      _notificationService = notificationService;
+
 		}
 		public async Task<IEnumerable<ProductResponse>> GetAllAdync(CancellationToken cancellationToken = default)
 		{
@@ -65,6 +68,7 @@ namespace EraShop.API.Services
 			await _context.Products.AddAsync(product, cancellationToken);
 			await _context.SaveChangesAsync(cancellationToken);
 
+			await _notificationService.SendNewProductsNotifications(product);
 			return Result.Success(product.Adapt<ProductResponse>());
 		}
 		public async Task<Result> UpdateAsync(int id, ProductRequest request, CancellationToken cancellationToken = default)

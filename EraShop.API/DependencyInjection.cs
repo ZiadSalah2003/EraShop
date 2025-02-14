@@ -15,6 +15,9 @@ using System.Reflection;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using Hangfire;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 namespace EraShop.API
 {
 	public static class DependencyInjection
@@ -42,18 +45,21 @@ namespace EraShop.API
 			services.AddScoped<ICategoryService, CategoryService>();
 			services.AddScoped<IProductService, ProductService>();
 			services.AddScoped<IBasketService, BasketService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IWishListService, WishListService>();
 
 
 
 
-			services.AddSwaggerServices();
+            services.AddSwaggerServices();
 			services.AddAuthConfig(configuration);
 			services.ReddisConfiguration(configuration);
 			services.AddMapsterConfig();
+			services.AddFluentValidationConfig();
 			
 
 			services.AddHttpContextAccessor();
-
+			services.AddBackgroundJobsConfig(configuration);
 			// mapping MailSettings
 
 			services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
@@ -64,6 +70,7 @@ namespace EraShop.API
 		{
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			services.AddEndpointsApiExplorer();
+			
 			services.AddSwaggerGen(options =>
 			{
 				options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme
@@ -89,9 +96,19 @@ namespace EraShop.API
 					}
 				});
 			});
+			
 
 			return services;
 		}
+
+        private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
+        {
+            services
+                .AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+            return services;
+        }
 
         private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
         {
@@ -114,7 +131,19 @@ namespace EraShop.API
 			return services;
 		}
 
-		private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection AddBackgroundJobsConfig(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+
+            services.AddHangfireServer();
+            return services;
+        }
+
+        private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
 		{
 			services.AddIdentity<ApplicationUser, ApplicationRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
