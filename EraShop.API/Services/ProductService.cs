@@ -12,15 +12,19 @@ namespace EraShop.API.Services
 	{
 		private readonly ApplicationDbContext _context;
 		private readonly IFileService _fileService;
-		public ProductService(ApplicationDbContext context, IFileService fileService)
+		private readonly IHttpContextAccessor _httpContextAccessor;
+		public ProductService(ApplicationDbContext context, IFileService fileService, IHttpContextAccessor httpContextAccessor)
 		{
 			_context = context;
 			_fileService = fileService;
+			_httpContextAccessor = httpContextAccessor;
 		}
 		public async Task<IEnumerable<ProductResponse>> GetAllAdync(CancellationToken cancellationToken = default)
 		{
 			var products = await _context.Products
 							.Where(c => !c.IsDisable)
+							.Include(p => p.Brand)
+							.Include(p => p.Category)
 							.ProjectToType<ProductResponse>()
 							.ToListAsync(cancellationToken);
 			return products;
@@ -33,6 +37,8 @@ namespace EraShop.API.Services
 
 			var product = await _context.Products
 							.Where(c => c.Id == id)
+							.Include(p => p.Brand)
+							.Include(p => p.Category)
 							.ProjectToType<ProductResponse>()
 							.FirstOrDefaultAsync(cancellationToken);
 			return Result.Success(product!);
@@ -51,15 +57,10 @@ namespace EraShop.API.Services
 			if (category is null)
 				return Result.Failure<ProductResponse>(CategoryErrors.CategoryNotFound);
 
-			if (request.ImageUrl?.Length > 1 * 1024 * 1024)
-			{
-				return Result.Failure<ProductResponse>(new Error("invalidFileSize", "File Size shouldn't exceed 1MB", StatusCodes.Status400BadRequest));
-			}
-
-			string[] allowedFileExtensions = { ".jpg", ".jpeg", ".png" };
-			string createdImageName = await _fileService.SaveFileAsync(request.ImageUrl!, allowedFileExtensions, ImageSubFolder.Product);
-
+			string createdImageName = await _fileService.SaveFileAsync(request.ImageUrl!, ImageSubFolder.Product);
+			var baseUrl = GetBaseUrl();
 			var product = request.Adapt<Product>();
+			product.ImageUrl = $"{baseUrl}{createdImageName}";
 
 			await _context.Products.AddAsync(product, cancellationToken);
 			await _context.SaveChangesAsync(cancellationToken);
@@ -95,6 +96,14 @@ namespace EraShop.API.Services
 			_context.Products.Update(product);
 			await _context.SaveChangesAsync(cancellationToken);
 			return Result.Success();
+		}
+		private string GetBaseUrl()
+		{
+			var request = _httpContextAccessor.HttpContext?.Request;
+			if (request == null)
+				throw new InvalidOperationException("HttpContext is not available.");
+
+			return $"{request.Scheme}://{request.Host}/images/Product/";
 		}
 	}
 }
