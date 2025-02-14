@@ -28,27 +28,8 @@ namespace EraShop.API
 			}
 
 			app.UseHttpsRedirection();
-			app.UseStaticFiles( new StaticFileOptions
-			{
-				FileProvider = new PhysicalFileProvider(
-					Path.Combine(builder.Environment.ContentRootPath,
-					"Uploads")),
-				RequestPath ="/Resources"
-			});
-
-            app.UseHangfireDashboard("/jobs", new DashboardOptions
-            {
-                Authorization =
-                  [
-						 new HangfireCustomBasicAuthenticationFilter
-						{
-							User = app.Configuration.GetValue<string>("HangfireSettings:UserName"),
-							Pass =app.Configuration.GetValue<string>("HangfireSettings:Password")
-						}
-                  ],
-                DashboardTitle = "EraShop Dashboard"
-            });
-            app.UseCors();
+			app.UseStaticFiles();
+			app.UseCors();
 			app.UseAuthorization();
 
 

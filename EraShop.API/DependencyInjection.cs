@@ -45,6 +45,13 @@ namespace EraShop.API
 			services.AddScoped<ICategoryService, CategoryService>();
 			services.AddScoped<IProductService, ProductService>();
 			services.AddScoped<IBasketService, BasketService>();
+  services.AddScoped<IOrderService, OrderService>();
+			services.AddScoped<IPaymentService, PaymentService>();
+
+
+
+			services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));
+			services.AddSwaggerServices();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IWishListService, WishListService>();
 
