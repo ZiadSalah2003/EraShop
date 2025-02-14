@@ -1,4 +1,7 @@
-﻿namespace EraShop.API.Contracts.Products
+﻿using EraShop.API.Contracts.Brands;
+using EraShop.API.Contracts.Categories;
+
+namespace EraShop.API.Contracts.Products
 {
 	public record ProductResponse
 	(
@@ -9,7 +12,7 @@
 		string ImageUrl,
 		int Quantity,
 		bool IsDisable,
-		string Brand,
-		string Category
+		BrandResponse Brand,
+		CategoryResponse Category
 	);
 }

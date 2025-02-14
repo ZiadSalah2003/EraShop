@@ -19,6 +19,7 @@ namespace EraShop.API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsDisable = table.Column<bool>(type: "bit", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -83,8 +84,6 @@ namespace EraShop.API.Migrations
                     IsDisable = table.Column<bool>(type: "bit", nullable: false),
                     BrandId = table.Column<int>(type: "int", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: true),
-                    BrandId1 = table.Column<int>(type: "int", nullable: true),
-                    CategoryId1 = table.Column<int>(type: "int", nullable: true),
                     CreatedById = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -108,22 +107,14 @@ namespace EraShop.API.Migrations
                         name: "FK_Products_Brands_BrandId",
                         column: x => x.BrandId,
                         principalTable: "Brands",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Products_Brands_BrandId1",
-                        column: x => x.BrandId1,
-                        principalTable: "Brands",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryId1",
-                        column: x => x.CategoryId1,
-                        principalTable: "Categories",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,7 +150,7 @@ namespace EraShop.API.Migrations
                 keyColumn: "Id",
                 keyValue: "6dc6528a-b280-4770-9eae-82671ee81ef7",
                 column: "PasswordHash",
-                value: "AQAAAAIAAYagAAAAEEPPtSOyFCOqGsC1BsqNPSCN213CkHrMlXYVsGm83tW96IcIFXh7jeNiQJl/Wj4L3A==");
+                value: "AQAAAAIAAYagAAAAECZlKzBqHf8pYDpYW5yCVW12pjgCkKSp8DI7G9oNMw+T3/Qf/EjWzfrBBW72K99H1w==");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Brands_CreatedById",
@@ -187,19 +178,9 @@ namespace EraShop.API.Migrations
                 column: "BrandId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_BrandId1",
-                table: "Products",
-                column: "BrandId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_CategoryId1",
-                table: "Products",
-                column: "CategoryId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CreatedById",
