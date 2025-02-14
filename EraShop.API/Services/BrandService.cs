@@ -28,14 +28,7 @@ namespace EraShop.API.Services
                 return Result.Failure(BrandErrors.DublicatedName);
             }
 
-
-            if (request.Image?.Length > 1 * 1024 * 1024)
-            {
-                return Result.Failure(BrandErrors.BrandImageExcced1M);
-            }
-
-            string[] allowedFileExtensions = [".jpg", ".jpeg", ".png"];
-            string createdImageName = await _fileService.SaveFileAsync(request.Image!, allowedFileExtensions,"Brand");
+            string createdImageName = await _fileService.SaveFileAsync(request.Image!,"Brand");
 
             var baseUrl = GetBaseUrl();
 
@@ -95,14 +88,7 @@ namespace EraShop.API.Services
             //second Update Name 
             Brand.Name = request.Name;
 
-            // Third Add New Image
-            if(request.Image?.Length > 1 * 1024 * 1024)
-            {
-                return Result.Failure(new Error("invalidFileSize", "File Size shouldn't exceed 1MB", StatusCodes.Status400BadRequest));
-            }
-
-            string[] allowedFileExtensions = [".jpg", ".jpeg", ".png"];
-            string createdImageName = await _fileService.SaveFileAsync(request.Image!, allowedFileExtensions, "Brand");
+            string createdImageName = await _fileService.SaveFileAsync(request.Image!, "Brand");
 
             var baseUrl = GetBaseUrl();
 
@@ -143,8 +129,8 @@ namespace EraShop.API.Services
             if (request == null)
                 throw new InvalidOperationException("HttpContext is not available.");
 
-            return $"{request.Scheme}://{request.Host}/Resources/Brand/";
-        }
+			return $"{request.Scheme}://{request.Host}/images/Brand/";
+		}
 
 
     }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241202221207_AddTablesProductBrandCategoryAndReview")]
-    partial class AddTablesProductBrandCategoryAndReview
+    [Migration("20250214025311_AddTablesOrderOrderItemsAndDeliveryMethod")]
+    partial class AddTablesOrderOrderItemsAndDeliveryMethod
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,7 +169,7 @@ namespace EraShop.API.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ERA-SHOP.COM",
                             NormalizedUserName = "ADMIN@ERA-SHOP.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEPPtSOyFCOqGsC1BsqNPSCN213CkHrMlXYVsGm83tW96IcIFXh7jeNiQJl/Wj4L3A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEM5/NTHkkKG/HpE/08AF7HkB3tf0wwKk9FdLPU0O0l4BrigwErkB0N0eU4mgMRWWzw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,
@@ -191,6 +191,9 @@ namespace EraShop.API.Migrations
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDisable")
                         .HasColumnType("bit");
@@ -253,6 +256,162 @@ namespace EraShop.API.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("EraShop.API.Entities.DeliveryMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<string>("DeliveryTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryMethods");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 4,
+                            Cost = 0m,
+                            DeliveryTime = "1-2 Weeks",
+                            Description = "Free! you get what you pay for",
+                            ShortName = "Free"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Cost = 10m,
+                            DeliveryTime = "1-2 Days",
+                            Description = "Fastest delivery time",
+                            ShortName = "UPS1"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Cost = 5m,
+                            DeliveryTime = "2-5 Days",
+                            Description = "Get it within 5 days",
+                            ShortName = "UPS2"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Cost = 2m,
+                            DeliveryTime = "5-10 Days",
+                            Description = "Slower but cheap",
+                            ShortName = "UPS3"
+                        });
+                });
+
+            modelBuilder.Entity("EraShop.API.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BuyerEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DeliveryMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentIntentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<string>("UpdatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("DeliveryMethodId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("EraShop.API.Entities.OrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(8,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UpdatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.ToTable("OrderItems");
+                });
+
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -264,13 +423,7 @@ namespace EraShop.API.Migrations
                     b.Property<int?>("BrandId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BrandId1")
-                        .HasColumnType("int");
-
                     b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CategoryId1")
                         .HasColumnType("int");
 
                     b.Property<string>("CreatedById")
@@ -311,11 +464,7 @@ namespace EraShop.API.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.HasIndex("BrandId1");
-
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("CategoryId1");
 
                     b.HasIndex("CreatedById");
 
@@ -536,23 +685,127 @@ namespace EraShop.API.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
+            modelBuilder.Entity("EraShop.API.Entities.Order", b =>
+                {
+                    b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EraShop.API.Entities.DeliveryMethod", "DeliveryMethod")
+                        .WithMany()
+                        .HasForeignKey("DeliveryMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EraShop.API.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.OwnsOne("EraShop.API.Entities.Address", "ShippingAddress", b1 =>
+                        {
+                            b1.Property<int>("OrderId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("FirstName")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("LastName")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("Orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+                        });
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("DeliveryMethod");
+
+                    b.Navigation("ShippingAddress")
+                        .IsRequired();
+
+                    b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("EraShop.API.Entities.OrderItem", b =>
+                {
+                    b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EraShop.API.Entities.Order", null)
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EraShop.API.Entities.ApplicationUser", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById");
+
+                    b.OwnsOne("EraShop.API.Entities.ProductItemOrdered", "Product", b1 =>
+                        {
+                            b1.Property<int>("OrderItemId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("PictureUrl")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<int>("ProductId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("ProductName")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("OrderItemId");
+
+                            b1.ToTable("OrderItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderItemId");
+                        });
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Product")
+                        .IsRequired();
+
+                    b.Navigation("UpdatedBy");
+                });
+
             modelBuilder.Entity("EraShop.API.Entities.Product", b =>
                 {
                     b.HasOne("EraShop.API.Entities.Brand", "Brand")
-                        .WithMany()
-                        .HasForeignKey("BrandId");
-
-                    b.HasOne("EraShop.API.Entities.Brand", null)
                         .WithMany("Products")
-                        .HasForeignKey("BrandId1");
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("EraShop.API.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId");
-
-                    b.HasOne("EraShop.API.Entities.Category", null)
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId1");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("EraShop.API.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
@@ -649,6 +902,11 @@ namespace EraShop.API.Migrations
             modelBuilder.Entity("EraShop.API.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("EraShop.API.Entities.Order", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using EraShop.API.Contracts.Files;
+using FluentValidation;
 
 namespace EraShop.API.Contracts.Products
 {
@@ -32,6 +33,10 @@ namespace EraShop.API.Contracts.Products
 			RuleFor(x => x.CategoryId)
 				.NotEmpty()
 				.NotNull();
+
+			RuleFor(x => x.ImageUrl)
+				.SetValidator(new BlockedSignaturesValidator()!)
+				.SetValidator(new FileSizeValidator()!);
 		}
     }
 }

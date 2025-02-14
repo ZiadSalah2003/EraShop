@@ -22,12 +22,14 @@ namespace EraShop.API.Persistence.EntitiesConfigrations
 				.IsRequired();
 
 			builder.HasOne(b => b.Brand)
-				.WithMany()
-				.HasForeignKey(p => p.BrandId);
+				.WithMany(b => b.Products)
+				.HasForeignKey(p => p.BrandId)
+				.OnDelete(DeleteBehavior.SetNull);
 
 			builder.HasOne(b => b.Category)
-				.WithMany()
-				.HasForeignKey(p => p.CategoryId);
+				.WithMany(c => c.Products)
+				.HasForeignKey(p => p.CategoryId)
+				.OnDelete(DeleteBehavior.SetNull);
 		}
 	}
 }
