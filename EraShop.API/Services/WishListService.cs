@@ -85,7 +85,7 @@ namespace EraShop.API.Services
                      .Where(l => l.Id == id && l.UserId == userId)
                      .Select(l => new WishListResponse(
                          l.Id,
-                         l.Items.Select(i => new ProductResponse(
+                         l.Items.Select(i => new WishListProductResponse(
                              i.Product.Id,
                              i.Product.Name,
                              i.Product.Description,

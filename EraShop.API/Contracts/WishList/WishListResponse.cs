@@ -5,6 +5,6 @@ namespace EraShop.API.Contracts.WishList
     public record WishListResponse
     (
         int id,
-        IEnumerable<ProductResponse> Products
+        IEnumerable<WishListProductResponse> Products
     );
 }
