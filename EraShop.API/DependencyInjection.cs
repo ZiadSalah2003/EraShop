@@ -48,6 +48,7 @@ namespace EraShop.API
 			services.AddScoped<IOrderService, OrderService>();
 			services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IReviewService, ReviewService>();
+			services.AddScoped<IUserService, UserService>();
 
 
 
