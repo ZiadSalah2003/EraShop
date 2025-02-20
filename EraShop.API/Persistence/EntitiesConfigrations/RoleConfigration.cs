@@ -25,6 +25,14 @@ namespace EraShop.API.Persistence.EntitiesConfigrations
 					NormalizedName = DefaultRoles.User.ToUpper(),
 					ConcurrencyStamp = DefaultRoles.UserRoleConcurrencyStamp,
 					IsDefault = true
+				},
+				new ApplicationRole
+				{
+					Id = DefaultRoles.SellerRoleId,
+					Name = DefaultRoles.Seller,
+					NormalizedName = DefaultRoles.Seller.ToUpper(),
+					ConcurrencyStamp = DefaultRoles.SellerRoleConcurrencyStamp,
+					IsDefault = true
 				}
 			]);
 		}
