@@ -4,6 +4,7 @@ using EraShop.API.Entities;
 using EraShop.API.Errors;
 using EraShop.API.Persistence;
 using Mapster;
+using System.Collections.Generic;
 
 namespace EraShop.API.Services
 {
@@ -100,7 +101,7 @@ namespace EraShop.API.Services
 			await _context.SaveChangesAsync();
 			return Result.Success(order.Adapt<OrderResponse>());
 		}
-		public async Task<Result<OrderResponse>> GetOrdersForUserAsync(string buyerEmail)
+		public async Task<Result<IEnumerable<OrderResponse>>> GetOrdersForUserAsync(string buyerEmail)
 		{
 			var orders = await _context.Orders
 							.Where(o => o.BuyerEmail == buyerEmail)
@@ -109,8 +110,8 @@ namespace EraShop.API.Services
 							.ThenInclude(oi => oi.Product)
 							.ToListAsync();
 			if (orders is null)
-				return Result.Failure<OrderResponse>(OrderErrors.OrderNotFound);
-			var orderResponse = orders.Adapt<OrderResponse>();
+				return Result.Failure< IEnumerable<OrderResponse>> (OrderErrors.OrderNotFound);
+			var orderResponse = orders.Adapt<IEnumerable<OrderResponse>>();
 			return Result.Success(orderResponse);
 		}
 
