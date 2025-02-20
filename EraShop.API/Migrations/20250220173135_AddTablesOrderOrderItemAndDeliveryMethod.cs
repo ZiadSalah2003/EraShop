@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EraShop.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTablesOrderOrderItemsAndDeliveryMethod : Migration
+    public partial class AddTablesOrderOrderItemAndDeliveryMethod : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -117,7 +117,7 @@ namespace EraShop.API.Migrations
                 keyColumn: "Id",
                 keyValue: "6dc6528a-b280-4770-9eae-82671ee81ef7",
                 column: "PasswordHash",
-                value: "AQAAAAIAAYagAAAAEM5/NTHkkKG/HpE/08AF7HkB3tf0wwKk9FdLPU0O0l4BrigwErkB0N0eU4mgMRWWzw==");
+                value: "AQAAAAIAAYagAAAAEDN9Bx9UfH2lwAJmgnmc2XR+U+h8cUQ3qktSX8dnoLR5yjrKzAXAi3TiYVprOhP97A==");
 
             migrationBuilder.InsertData(
                 table: "DeliveryMethods",
@@ -178,7 +178,7 @@ namespace EraShop.API.Migrations
                 keyColumn: "Id",
                 keyValue: "6dc6528a-b280-4770-9eae-82671ee81ef7",
                 column: "PasswordHash",
-                value: "AQAAAAIAAYagAAAAECZlKzBqHf8pYDpYW5yCVW12pjgCkKSp8DI7G9oNMw+T3/Qf/EjWzfrBBW72K99H1w==");
+                value: "AQAAAAIAAYagAAAAEMix01R8bEJgQg8PVDK/3T68BxW39edUuqYrXyIb8mlnUWsZxFlF2WPTQgIdT3axoA==");
         }
     }
 }

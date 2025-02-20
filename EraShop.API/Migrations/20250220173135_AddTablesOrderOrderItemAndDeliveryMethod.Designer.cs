@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250214025311_AddTablesOrderOrderItemsAndDeliveryMethod")]
-    partial class AddTablesOrderOrderItemsAndDeliveryMethod
+    [Migration("20250220173135_AddTablesOrderOrderItemAndDeliveryMethod")]
+    partial class AddTablesOrderOrderItemAndDeliveryMethod
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -169,7 +169,7 @@ namespace EraShop.API.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ERA-SHOP.COM",
                             NormalizedUserName = "ADMIN@ERA-SHOP.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEM5/NTHkkKG/HpE/08AF7HkB3tf0wwKk9FdLPU0O0l4BrigwErkB0N0eU4mgMRWWzw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDN9Bx9UfH2lwAJmgnmc2XR+U+h8cUQ3qktSX8dnoLR5yjrKzAXAi3TiYVprOhP97A==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,

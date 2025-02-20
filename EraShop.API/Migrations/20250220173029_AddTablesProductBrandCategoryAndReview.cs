@@ -150,7 +150,7 @@ namespace EraShop.API.Migrations
                 keyColumn: "Id",
                 keyValue: "6dc6528a-b280-4770-9eae-82671ee81ef7",
                 column: "PasswordHash",
-                value: "AQAAAAIAAYagAAAAECZlKzBqHf8pYDpYW5yCVW12pjgCkKSp8DI7G9oNMw+T3/Qf/EjWzfrBBW72K99H1w==");
+                value: "AQAAAAIAAYagAAAAEMix01R8bEJgQg8PVDK/3T68BxW39edUuqYrXyIb8mlnUWsZxFlF2WPTQgIdT3axoA==");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Brands_CreatedById",
