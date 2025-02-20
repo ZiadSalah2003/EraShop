@@ -9,5 +9,9 @@
 		public const string User = nameof(User);
 		public const string UserRoleId = "9eaa03df-8e4f-4161-85de-0f6e5e30bfd4";
 		public const string UserRoleConcurrencyStamp = "5ee6bc12-5cb0-4304-91e7-6a00744e042a";
+
+		public const string Seller = nameof(Seller);
+		public const string SellerRoleId = "0574c1f8-3801-4810-8622-bcf466bc4df4";
+		public const string SellerRoleConcurrencyStamp = "08867cec-b9f8-44f4-b85c-425a1061ff09";
 	}
 }

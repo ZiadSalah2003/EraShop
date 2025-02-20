@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EraShop.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250214025141_AddTablesProductBrandCategoryAndReview")]
+    [Migration("20250220173029_AddTablesProductBrandCategoryAndReview")]
     partial class AddTablesProductBrandCategoryAndReview
     {
         /// <inheritdoc />
@@ -169,7 +169,7 @@ namespace EraShop.API.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ERA-SHOP.COM",
                             NormalizedUserName = "ADMIN@ERA-SHOP.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAECZlKzBqHf8pYDpYW5yCVW12pjgCkKSp8DI7G9oNMw+T3/Qf/EjWzfrBBW72K99H1w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMix01R8bEJgQg8PVDK/3T68BxW39edUuqYrXyIb8mlnUWsZxFlF2WPTQgIdT3axoA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,

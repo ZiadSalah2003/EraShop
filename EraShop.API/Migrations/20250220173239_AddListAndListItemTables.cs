@@ -5,7 +5,7 @@
 namespace EraShop.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddListandListItemsTables : Migration
+    public partial class AddListAndListItemTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,7 +61,7 @@ namespace EraShop.API.Migrations
                 keyColumn: "Id",
                 keyValue: "6dc6528a-b280-4770-9eae-82671ee81ef7",
                 column: "PasswordHash",
-                value: "AQAAAAIAAYagAAAAEKtEBhCf6fRdqaw3DvI47/Px6bWb5sOYM0kYRx0f+OXqCX0Ia6+FjWftMvRNp++iJg==");
+                value: "AQAAAAIAAYagAAAAEHWCK9fltC+ufLB3pWVTkNobLc2WWFCj3D1OJsdRppcwu7DRchtykHEPJHxnltfhhQ==");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ListItems_ListId_ProductId",
@@ -75,9 +75,9 @@ namespace EraShop.API.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lists_Name",
+                name: "IX_Lists_Name_UserId",
                 table: "Lists",
-                column: "Name",
+                columns: new[] { "Name", "UserId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -100,7 +100,7 @@ namespace EraShop.API.Migrations
                 keyColumn: "Id",
                 keyValue: "6dc6528a-b280-4770-9eae-82671ee81ef7",
                 column: "PasswordHash",
-                value: "AQAAAAIAAYagAAAAED2XBrDiOSE5wPYkQBXFi2yAxeFzBcGQwfMna00c5VMMNgBkauj0zTOKGDsVZJu07w==");
+                value: "AQAAAAIAAYagAAAAEDN9Bx9UfH2lwAJmgnmc2XR+U+h8cUQ3qktSX8dnoLR5yjrKzAXAi3TiYVprOhP97A==");
         }
     }
 }

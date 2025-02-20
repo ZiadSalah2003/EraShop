@@ -16,20 +16,20 @@ namespace EraShop.API.Controllers
 			_basketService = basketService;
 		}
 
-		[HttpGet]
-		public async Task<IActionResult> GetBasket(string id)
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetBasket([FromRoute] string id)
 		{
 			var basket = await _basketService.GetCustomerBasketAsync(id);
 			return basket.IsSuccess ? Ok(basket.Value) : basket.ToProblem();
 		}
 		[HttpPost]
-		public async Task<IActionResult> UpdateBasket(CustomerBasketRequest request)
+		public async Task<IActionResult> UpdateBasket([FromBody] CustomerBasketRequest request)
 		{
 			var basket = await _basketService.UpdateCustomerBasketAsync(request);
 			return basket.IsSuccess ? Ok(basket.Value) : basket.ToProblem();
 		}
-		[HttpDelete]
-		public async Task<IActionResult> DeleteBasket(string id)
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteBasket([FromRoute] string id)
 		{
 			var basket = await _basketService.DeleteCustomerBasketAsync(id);
 			return basket.IsSuccess ? Ok() : basket.ToProblem();

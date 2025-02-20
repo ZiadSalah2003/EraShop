@@ -49,15 +49,15 @@ namespace EraShop.API
 			services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IReviewService, ReviewService>();
 			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IRoleService, RoleService>();
+			services.AddScoped<INotificationService, NotificationService>();
+			services.AddScoped<IWishListService, WishListService>();
 
 
 
 
-            services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));
+			services.Configure<StripeSettings>(configuration.GetSection("StripeSettings"));
 			services.AddSwaggerServices();
-            services.AddScoped<INotificationService, NotificationService>();
-            services.AddScoped<IWishListService, WishListService>();
-
 
 
 			services.AddAuthConfig(configuration);
