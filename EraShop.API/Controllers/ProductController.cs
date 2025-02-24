@@ -1,4 +1,5 @@
 ﻿using EraShop.API.Abstractions;
+using EraShop.API.Contracts.Common;
 using EraShop.API.Contracts.Products;
 using EraShop.API.Services;
 using Microsoft.AspNetCore.Http;
@@ -16,9 +17,9 @@ namespace EraShop.API.Controllers
 			_productService = productService;
 		}
 		[HttpGet("")]
-		public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken = default)
+		public async Task<IActionResult> GetAllAsync([FromQuery] RequestFilters filters, CancellationToken cancellationToken = default)
 		{
-			var response = await _productService.GetAllAdync(cancellationToken);
+			var response = await _productService.GetAllAdync(filters, cancellationToken);
 			return Ok(response);
 		}
 		[HttpGet("{id}")]
