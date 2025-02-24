@@ -1,10 +1,12 @@
 ﻿using EraShop.API.Abstractions;
 using EraShop.API.Abstractions.Consts;
+using EraShop.API.Contracts.Common;
 using EraShop.API.Contracts.Products;
 using EraShop.API.Entities;
 using EraShop.API.Errors;
 using EraShop.API.Persistence;
 using Mapster;
+using System.Linq.Dynamic.Core;
 
 namespace EraShop.API.Services
 {
@@ -22,15 +24,25 @@ namespace EraShop.API.Services
       _notificationService = notificationService;
 
 		}
-		public async Task<IEnumerable<ProductResponse>> GetAllAdync(CancellationToken cancellationToken = default)
+		public async Task<PaginatedList<ProductResponse>> GetAllAdync(RequestFilters filters, CancellationToken cancellationToken = default)
 		{
-			var products = await _context.Products
-							.Where(c => !c.IsDisable)
-							.Include(p => p.Brand)
-							.Include(p => p.Category)
-							.ProjectToType<ProductResponse>()
-							.ToListAsync(cancellationToken);
-			return products;
+			var query = _context.Products
+					.Where(c => !c.IsDisable);
+
+					if (!string.IsNullOrEmpty(filters.SearchValue))
+						query = query.Where(x => x.Name.Contains(filters.SearchValue));
+
+					if (!string.IsNullOrEmpty(filters.SortColumn))
+						query = query.OrderBy($"{filters.SortColumn} {filters.SortDirection}");
+
+					var products = query
+					.Include(p => p.Brand)
+					.Include(p => p.Category)
+					.ProjectToType<ProductResponse>()
+					.AsNoTracking();
+
+			var response = await PaginatedList<ProductResponse>.CreateAsync(products, filters.PageNumber, filters.PageSize, cancellationToken);
+			return response;
 		}
 		public async Task<Result<ProductResponse>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
 		{
@@ -44,6 +56,7 @@ namespace EraShop.API.Services
 							.Include(p => p.Category)
 							.ProjectToType<ProductResponse>()
 							.FirstOrDefaultAsync(cancellationToken);
+
 			return Result.Success(product!);
 		}
 		public async Task<Result<ProductResponse>> AddAsync(ProductRequest request, CancellationToken cancellationToken = default)
