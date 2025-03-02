@@ -40,5 +40,21 @@ namespace EraShop.API.Services
                 BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, $"📣 EraShop : New Product {product.Name}", body));
             }
         }
-    }
+		public async Task SendForUsersNotifications()
+		{
+			var usersRule = await _userManager.GetUsersInRoleAsync("Member");
+
+			var users = usersRule.Where(x => x.EmailConfirmed && !x.IsDisabled).ToList();
+
+			foreach (var user in users)
+			{
+				var placeholders = new Dictionary<string, string>
+		        {
+			        {"{{UserName}}", user.FirstName }
+		        };
+				var body = EmailBodyBuilder.GenerateEmailBody("UsersNotification", placeholders);
+				BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "📢 Weekly Update: Visit EraShop Now!", body));
+			}
+		}
+	}
 }

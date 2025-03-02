@@ -1,4 +1,5 @@
 
+using EraShop.API.Services;
 using Hangfire;
 using HangfireBasicAuthenticationFilter;
 using Microsoft.Extensions.FileProviders;
@@ -28,6 +29,11 @@ namespace EraShop.API
 			}
 
 			app.UseHttpsRedirection();
+			var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+			using var scope = scopeFactory.CreateScope();
+			var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+			RecurringJob.AddOrUpdate("SendWeeklyUserEmails",() => notificationService.SendForUsersNotifications(),"0 12 * * 6");
 			app.UseStaticFiles();
 			app.UseCors();
 			app.UseAuthorization();

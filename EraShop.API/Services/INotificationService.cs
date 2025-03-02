@@ -5,5 +5,7 @@ namespace EraShop.API.Services
     public interface INotificationService
     {
         Task SendNewProductsNotifications(Product product);
-    }
+        Task SendForUsersNotifications();
+
+	}
 }
