@@ -29,7 +29,22 @@ namespace EraShop.API
 			}
 
 			app.UseHttpsRedirection();
-			var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+
+            app.UseHangfireDashboard("/jobs", new DashboardOptions
+            {
+                Authorization =
+                    [
+                        new HangfireCustomBasicAuthenticationFilter
+                        {
+                            User = app.Configuration.GetValue<string>("HangfireSettings:UserName"),
+                            Pass =app.Configuration.GetValue<string>("HangfireSettings:Password")
+                        }
+                    ],
+                DashboardTitle = "EraShop Dashboard"
+            });
+
+
+            var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 			using var scope = scopeFactory.CreateScope();
 			var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
