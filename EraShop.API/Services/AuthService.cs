@@ -111,7 +111,7 @@ namespace EraShop.API.Services
 
 			await _userManager.UpdateAsync(user);
 
-			var response = new AuthResponse(user.Id, user.Email, user.FullName, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
+			var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
 
 			return Result.Success(response);
 		}
