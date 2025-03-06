@@ -21,5 +21,7 @@ namespace EraShop.API.Errors
          new("User.EmailNotConfirmed", "Email is not confirmed", StatusCodes.Status401Unauthorized);
 
 		public static readonly Error UserEmailNotFound = new("User.UserEmailNotFound", "User Email NotFound", StatusCodes.Status404NotFound);
+		public static readonly Error InvalidRefreshToken = new("User.InvalidRefreshToken", "Invalid refresh token", StatusCodes.Status401Unauthorized);
+
 	}
 }

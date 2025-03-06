@@ -26,7 +26,7 @@ namespace EraShop.API.Controllers
 		[HttpPost("refresh-token")]
 		public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
 		{
-			var response = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
+			var response = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 			return response.IsSuccess ? Ok() : response.ToProblem();
 		}
 

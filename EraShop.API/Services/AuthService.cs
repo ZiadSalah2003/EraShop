@@ -78,7 +78,43 @@ namespace EraShop.API.Services
 
 			return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredentails);
 		}
+		public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
+		{
+			var userId = _jwtProvider.ValidateToken(token);
 
+			if (userId is null)
+				return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
+
+			var user = await _userManager.FindByIdAsync(userId);
+
+			if (user is null)
+				return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
+
+			var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
+
+			if (userRefreshToken is null)
+				return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken);
+
+			userRefreshToken.RevokedOn = DateTime.UtcNow;
+
+			var userRoles = await GetUserRole(user, cancellationToken);
+
+			var (newToken, expiresIn) = _jwtProvider.GenerateToken(user, userRoles);
+			var newRefreshToken = GenerateRefreshToken();
+			var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+
+			user.RefreshTokens.Add(new RefreshToken
+			{
+				Token = newRefreshToken,
+				ExpiresOn = refreshTokenExpiration
+			});
+
+			await _userManager.UpdateAsync(user);
+
+			var response = new AuthResponse(user.Id, user.Email, user.FullName, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
+
+			return Result.Success(response);
+		}
 		public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
 		{
 			var userId = _jwtProvider.ValidateToken(token);
