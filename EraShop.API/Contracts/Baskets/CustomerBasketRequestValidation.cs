@@ -11,9 +11,11 @@ namespace EraShop.API.Contracts.Baskets
 				.NotEmpty()
 				.NotNull();
 
-			RuleFor(x => x.Items)
+			RuleForEach(x => x.Items)
 				.NotEmpty()
-				.NotNull();
+				.NotNull()
+				.SetInheritanceValidator(b =>
+				b.Add(new BasketItemResponseValidator()));
 		}
 	}
 }
