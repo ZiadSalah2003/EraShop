@@ -4,6 +4,7 @@ using EraShop.API.Entities;
 using EraShop.API.Errors;
 using EraShop.API.Persistence;
 using Mapster;
+using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
 namespace EraShop.API.Services
@@ -14,12 +15,14 @@ namespace EraShop.API.Services
 		private readonly IProductService _productService;
 		private readonly IPaymentService _paymentService;
 		private readonly ApplicationDbContext _context;
-		public OrderService(IProductService productService, IPaymentService paymentService, IBasketService basketService, ApplicationDbContext context)
+		private readonly UserManager<ApplicationUser> _userManager;
+		public OrderService(IProductService productService, IPaymentService paymentService, IBasketService basketService, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
 		{
 			_basketService = basketService;
 			_productService = productService;
 			_context = context;
 			_paymentService = paymentService;
+			_userManager = userManager;
 		}
 		public async Task<Result<OrderResponse>> CreateOrderAsync(string buyerEmail, OrderCreateRequest request)
 		{
@@ -97,6 +100,19 @@ namespace EraShop.API.Services
 				PaymentIntentId = basket.PaymentIntentId!
 
 			};
+
+			var user = await _userManager.FindByEmailAsync(buyerEmail);
+			if (user is null)
+				return Result.Failure<OrderResponse>(UserErrors.UserEmailNotFound);
+
+			var bill = new Bill
+			{
+				BuyerName = $"{user.FirstName} {user.LastName}",
+				BuyerEmail = buyerEmail,
+				Subtotal = subtotal,
+				Status = OrderStatus.Pending
+			};
+			await _context.Bills.AddAsync(bill);
 			await _context.Orders.AddAsync(order);
 			await _context.SaveChangesAsync();
 			return Result.Success(order.Adapt<OrderResponse>());
