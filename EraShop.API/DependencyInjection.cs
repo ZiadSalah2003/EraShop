@@ -50,7 +50,8 @@ namespace EraShop.API
             services.AddScoped<IReviewService, ReviewService>();
 			services.AddScoped<IUserService, UserService>();
 			services.AddScoped<IRoleService, RoleService>();
-			services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<INotificationService, NotificationService>();
 			services.AddScoped<IWishListService, WishListService>();
 
 
