@@ -1,6 +1,8 @@
-﻿namespace EraShop.API.Errors
+﻿using EraShop.API.Abstractions;
+
+namespace EraShop.API.Errors
 {
-    public class WishListErrors
+    public static class WishListErrors
     {
         public static readonly Error ListNameIsExist = 
             new("List.ListNameIsExist", "This List Already Exist", StatusCodes.Status400BadRequest);
