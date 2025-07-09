@@ -1,11 +1,11 @@
 ﻿using EraShop.API.Abstractions;
+using EraShop.API.Contracts.Infrastructure;
 using EraShop.API.Contracts.Orders;
 using EraShop.API.Entities;
 using EraShop.API.Errors;
-using EraShop.API.Persistence;
+using EraShop.API.Specification.Order;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
 
 namespace EraShop.API.Services
 {
@@ -14,13 +14,13 @@ namespace EraShop.API.Services
 		private readonly IBasketService _basketService;
 		private readonly IProductService _productService;
 		private readonly IPaymentService _paymentService;
-		private readonly ApplicationDbContext _context;
+		private readonly IUnitOfWork _unitOfWork;
 		private readonly UserManager<ApplicationUser> _userManager;
-		public OrderService(IProductService productService, IPaymentService paymentService, IBasketService basketService, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+		public OrderService(IProductService productService, IPaymentService paymentService, IBasketService basketService, IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
 		{
 			_basketService = basketService;
 			_productService = productService;
-			_context = context;
+			_unitOfWork = unitOfWork;
 			_paymentService = paymentService;
 			_userManager = userManager;
 		}
@@ -75,18 +75,18 @@ namespace EraShop.API.Services
 				City = request.ShipToAddress.City,
 				Country = request.ShipToAddress.Country
 			};
-			var deliveryMethod = await _context.DeliveryMethods.FirstOrDefaultAsync(d => d.Id == request.DeliveryMethodId);
-			var existingOrder = await _context.Orders
-				.Include(o => o.ShippingAddress)
-				.Include(o => o.DeliveryMethod)
-				.Include(o => o.Items)
-				.ThenInclude(oi => oi.Product)
-				.FirstOrDefaultAsync(o => o.PaymentIntentId == basket.PaymentIntentId);
+			
+			var deliveryMethodRepository = _unitOfWork.GetRepository<DeliveryMethod, int>();
+			var deliveryMethod = await deliveryMethodRepository.GetByIdAsync(request.DeliveryMethodId);
+			
+			var orderRepository = _unitOfWork.GetRepository<Order, int>();
+			var existingOrderSpec = new OrderSpecification(o => o.PaymentIntentId == basket.PaymentIntentId);
+			var existingOrder = await orderRepository.GetWithSpecAsync(existingOrderSpec);
 
 			if (existingOrder is not null)
 			{
-				_context.Orders.Remove(existingOrder);
-				await _context.SaveChangesAsync();
+				orderRepository.Delete(existingOrder);
+				await _unitOfWork.CompleteAsync();
 				await _paymentService.CreateOrUpdatePaymentIntent(basket.Id);
 			}
 
@@ -105,6 +105,7 @@ namespace EraShop.API.Services
 			if (user is null)
 				return Result.Failure<OrderResponse>(UserErrors.UserEmailNotFound);
 
+			var billRepository = _unitOfWork.GetRepository<Bill, int>();
 			var bill = new Bill
 			{
 				BuyerName = $"{user.FirstName} {user.LastName}",
@@ -112,20 +113,18 @@ namespace EraShop.API.Services
 				Subtotal = subtotal,
 				Status = OrderStatus.Pending
 			};
-			await _context.Bills.AddAsync(bill);
-			await _context.Orders.AddAsync(order);
-			await _context.SaveChangesAsync();
+			await billRepository.AddAsync(bill);
+			await orderRepository.AddAsync(order);
+			await _unitOfWork.CompleteAsync();
 			return Result.Success(order.Adapt<OrderResponse>());
 		}
 		public async Task<Result<IEnumerable<OrderResponse>>> GetOrdersForUserAsync(string buyerEmail)
 		{
-			var orders = await _context.Orders
-							.Where(o => o.BuyerEmail == buyerEmail)
-							.Include(o => o.ShippingAddress)
-							.Include(o => o.Items)
-							.ThenInclude(oi => oi.Product)
-							.ToListAsync();
-			if (orders is null)
+			var orderRepository = _unitOfWork.GetRepository<Order, int>();
+			var orderSpec = new OrderSpecification(buyerEmail);
+			var orders = await orderRepository.GetAllWithSpecAsync(orderSpec);
+			
+			if (orders == null || !orders.Any())
 				return Result.Failure< IEnumerable<OrderResponse>> (OrderErrors.OrderNotFound);
 			var orderResponse = orders.Adapt<IEnumerable<OrderResponse>>();
 			return Result.Success(orderResponse);
@@ -133,12 +132,10 @@ namespace EraShop.API.Services
 
 		public async Task<Result<OrderResponse>> GetOrderByIdAsync(string buyerEmail,int orderId)
 		{
-			var order = await _context.Orders
-							.Where(o => o.BuyerEmail == buyerEmail && o.Id == orderId)
-							.Include(o => o.ShippingAddress)
-							.Include(o => o.Items)
-							.ThenInclude(oi => oi.Product)
-							.FirstOrDefaultAsync();
+			var orderRepository = _unitOfWork.GetRepository<Order, int>();
+			var orderSpec = new OrderSpecification(o => o.BuyerEmail == buyerEmail && o.Id == orderId);
+			var order = await orderRepository.GetWithSpecAsync(orderSpec);
+			
 			if (order is null)
 				return Result.Failure<OrderResponse>(OrderErrors.OrderNotFound);
 			var orderResponse = order.Adapt<OrderResponse>();
@@ -146,8 +143,10 @@ namespace EraShop.API.Services
 		}
 		public async Task<Result<IEnumerable<DeliveryMethodResponse>>> GetDeliveryMethodsAsync()
 		{
-			var deliveryMethods = await _context.DeliveryMethods.ToListAsync();
-			if (deliveryMethods is null)
+			var deliveryMethodRepository = _unitOfWork.GetRepository<DeliveryMethod, int>();
+			var deliveryMethods = await deliveryMethodRepository.GetAllAsync();
+			
+			if (deliveryMethods == null || !deliveryMethods.Any())
 				return Result.Failure<IEnumerable<DeliveryMethodResponse>>(OrderErrors.DeliveryMethodNotFound);
 
 			return Result.Success(deliveryMethods.Adapt<IEnumerable<DeliveryMethodResponse>>());
