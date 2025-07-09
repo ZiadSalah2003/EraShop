@@ -1,4 +1,6 @@
-﻿namespace EraShop.API.Errors
+﻿using EraShop.API.Abstractions;
+
+namespace EraShop.API.Errors
 {
 	public static class RoleErrors
 	{

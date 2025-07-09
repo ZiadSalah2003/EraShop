@@ -1,30 +1,31 @@
-﻿using EraShop.API.Contracts.Products;
+﻿using EraShop.API.Contracts.Infrastructure;
+using EraShop.API.Contracts.Products;
 using EraShop.API.Contracts.WishList;
 using EraShop.API.Entities;
 using EraShop.API.Errors;
-using EraShop.API.Persistence;
+using EraShop.API.Specification.Product;
+using EraShop.API.Specification.WishList;
 using Mapster;
-using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace EraShop.API.Services
 {
-    public class WishListService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor) : IWishListService
+    public class WishListService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor) : IWishListService
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<Result> AddListAsync(CreateListRequest request, CancellationToken cancellationToken)
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var NameIsExist = await _context.Lists
-                .AnyAsync(x => x.Name.ToLower() == request.Name.ToLower() && x.UserId == userId , cancellationToken);
-
-            if (NameIsExist)
-                return Result.Failure(WishListErrors.ListNameIsExist);
-
+            var listRepository = _unitOfWork.GetRepository<List, int>();
             
+            var nameSpec = new WishListSpecification(l => l.Name.ToLower() == request.Name.ToLower() && l.UserId == userId);
+            var nameIsExist = await listRepository.GetWithSpecAsync(nameSpec);
+
+            if (nameIsExist != null)
+                return Result.Failure(WishListErrors.ListNameIsExist);
 
             var newList = new List
             {
@@ -34,8 +35,8 @@ namespace EraShop.API.Services
 
             var list = newList.Adapt<List>();
 
-            await _context.Lists.AddAsync(list, cancellationToken);
-            await _context.SaveChangesAsync();
+            await listRepository.AddAsync(list, cancellationToken);
+            await _unitOfWork.CompleteAsync();
             return Result.Success();
         }
 
@@ -43,19 +44,26 @@ namespace EraShop.API.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var WishListExist = await _context.Lists.AnyAsync(l => l.Id == id && l.UserId == userId , cancellationToken) ; 
+            var listRepository = _unitOfWork.GetRepository<List, int>();
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var listItemRepository = _unitOfWork.GetRepository<ListItem, int>();
+            
+            var wishListSpec = new WishListSpecification(l => l.Id == id && l.UserId == userId);
+            var wishListExist = await listRepository.GetWithSpecAsync(wishListSpec);
 
-            if(!WishListExist)
+            if(wishListExist == null)
                 return Result.Failure(WishListErrors.ListNotFound);
 
-            var ProductIsExist = await _context.Products.AnyAsync(p => p.Id == request.ProductId, cancellationToken);
+            var productSpec = new ProductSpecification(request.ProductId);
+            var productIsExist = await productRepository.GetWithSpecAsync(productSpec);
 
-            if (!ProductIsExist)
+            if (productIsExist == null)
                 return Result.Failure(ProductErrors.ProductNotFound);
 
-            var ProductIsExistInList = await _context.ListItems.AnyAsync(l => l.ListId == id && l.ProductId == request.ProductId , cancellationToken);
+            var listItemSpec = new ListItemSpecification(id, request.ProductId);
+            var productIsExistInList = await listItemRepository.GetWithSpecAsync(listItemSpec);
            
-            if (ProductIsExistInList)
+            if (productIsExistInList != null)
                 return Result.Failure(WishListErrors.ProductAlreadyExistInList);
 
             var addingProductToList = new ListItem 
@@ -66,8 +74,8 @@ namespace EraShop.API.Services
 
             var addedProduct = addingProductToList.Adapt<ListItem>();
 
-            await _context.ListItems.AddAsync(addedProduct, cancellationToken);
-            await _context.SaveChangesAsync();
+            await listItemRepository.AddAsync(addedProduct, cancellationToken);
+            await _unitOfWork.CompleteAsync();
             return Result.Success();
         }
 
@@ -76,110 +84,130 @@ namespace EraShop.API.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var WishListExist = await _context.Lists.AnyAsync(l => l.Id == id && l.UserId == userId, cancellationToken);
+            var listRepository = _unitOfWork.GetRepository<List, int>();
+            var wishListSpec = new WishListSpecification(l => l.Id == id && l.UserId == userId);
+            var wishList = await listRepository.GetWithSpecAsync(wishListSpec);
 
-            if (!WishListExist)
+            if (wishList == null)
                 return Result.Failure<WishListResponse>(WishListErrors.ListNotFound);
 
-                 var wishList = await _context.Lists
-                     .Where(l => l.Id == id && l.UserId == userId)
-                     .Select(l => new WishListResponse(
-                         l.Id,
-                         l.Items.Select(i => new WishListProductResponse(
-                             i.Product.Id,
-                             i.Product.Name,
-                             i.Product.Description,
-                             i.Product.Price,
-                             i.Product.ImageUrl!,
-                             i.Product.Quantity,
-                             i.Product.IsDisable,
-                             i.Product.Brand!.Name,
-                             i.Product.Category!.Name
-                         ))
-                      ))
-                 .FirstOrDefaultAsync(cancellationToken);
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var productIds = wishList.Items.Select(i => i.ProductId).ToList();
+            var products = new List<Product>();
 
-            return Result.Success(wishList!);
+            foreach (var productId in productIds)
+            {
+                var productSpec = new ProductSpecification(productId);
+                var product = await productRepository.GetWithSpecAsync(productSpec);
+                if (product != null)
+                    products.Add(product);
+            }
+            var wishListResponse = new WishListResponse(
+                wishList.Id,
+                products.Select(product => new WishListProductResponse(
+                    product.Id,
+                    product.Name,
+                    product.Description,
+                    product.Price,
+                    product.ImageUrl!,
+                    product.Quantity,
+                    product.IsDisable,
+                    product.Brand?.Name ?? "Unknown",
+                    product.Category?.Name ?? "Unknown"
+                ))
+            );
 
-
+            return Result.Success(wishListResponse);
         }
-
         public async Task<Result<IEnumerable<GetAllWishListsResponse>>> GetAllWishListsAsync(CancellationToken cancellationToken)
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var wishList = await _context.Lists
-                                    .Where(l => l.UserId == userId) 
-                                    .Select(l => new GetAllWishListsResponse(l.Id, l.Name)) 
-                                    .ToListAsync(cancellationToken);
+            if (userId == null)
+                return Result.Failure<IEnumerable<GetAllWishListsResponse>>(UserErrors.UserEmailNotFound);
 
-            return Result.Success<IEnumerable<GetAllWishListsResponse>>(wishList);
+            var listRepository = _unitOfWork.GetRepository<List, int>();
+            var wishListSpec = new WishListSpecification(userId);
+            var wishLists = await listRepository.GetAllWithSpecAsync(wishListSpec);
+
+            var wishListResponses = wishLists.Select(l => new GetAllWishListsResponse(l.Id, l.Name));
+
+            return Result.Success<IEnumerable<GetAllWishListsResponse>>(wishListResponses);
         }
-
         public async Task<Result> UpdateWishListAsync(int id, UpdateWishListRequest request, CancellationToken cancellationToken)
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var wishList = await _context.Lists
-                            .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId, cancellationToken);
+            var listRepository = _unitOfWork.GetRepository<List, int>();
+            var wishListSpec = new WishListSpecification(l => l.Id == id && l.UserId == userId);
+            var wishList = await listRepository.GetWithSpecAsync(wishListSpec);
 
-            if (wishList is null)
+            if (wishList == null)
                 return Result.Failure(WishListErrors.ListNotFound);
 
-            var isNameTaken = await _context.Lists
-                         .AnyAsync(l => l.UserId == userId && l.Name.ToLower() == request.Name.ToLower() && l.Id != id, cancellationToken);
+            var nameSpec = new WishListSpecification(l => l.UserId == userId && l.Name.ToLower() == request.Name.ToLower() && l.Id != id);
+            var isNameTaken = await listRepository.GetWithSpecAsync(nameSpec);
 
-            if (isNameTaken)
+            if (isNameTaken != null)
                 return Result.Failure(WishListErrors.ListNameIsExist);
 
             wishList.Name = request.Name;
-            await _context.SaveChangesAsync(cancellationToken);
+            listRepository.Update(wishList);
+            await _unitOfWork.CompleteAsync();
 
             return Result.Success();
-
         }
-
         public async Task<Result> DeleteProductFromWishListAsync(int id, DeleteProductFromListRequest request, CancellationToken cancellationToken)
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var WishListExist = await _context.Lists.AnyAsync(l => l.Id == id && l.UserId == userId, cancellationToken);
+            var listRepository = _unitOfWork.GetRepository<List, int>();
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var listItemRepository = _unitOfWork.GetRepository<ListItem, int>();
+            
+            var wishListSpec = new WishListSpecification(l => l.Id == id && l.UserId == userId);
+            var wishListExist = await listRepository.GetWithSpecAsync(wishListSpec);
 
-            if (!WishListExist)
+            if (wishListExist == null)
                 return Result.Failure(WishListErrors.ListNotFound);
 
-            var ProductIsExist = await _context.Products.AnyAsync(p => p.Id == request.ProductId, cancellationToken);
+            var productSpec = new ProductSpecification(request.ProductId);
+            var productIsExist = await productRepository.GetWithSpecAsync(productSpec);
 
-            if (!ProductIsExist)
+            if (productIsExist == null)
                 return Result.Failure(ProductErrors.ProductNotFound);
 
-            var listItem = await _context.ListItems
-                             .FirstOrDefaultAsync(l => l.ListId == id && l.ProductId == request.ProductId, cancellationToken);
-
-            if (listItem is null)
+            var listItemSpec = new ListItemSpecification(id, request.ProductId);
+            var listItem = await listItemRepository.GetWithSpecAsync(listItemSpec);
+            
+            if (listItem == null)
                 return Result.Failure(ProductErrors.ProductNotFound);
 
-            _context.ListItems.Remove(listItem);
-            await _context.SaveChangesAsync(cancellationToken);
+            listItemRepository.Delete(listItem);
+            await _unitOfWork.CompleteAsync();
 
             return Result.Success();
         }
-
         public async Task<Result> DeleteWishListAsync(int id, CancellationToken cancellationToken)
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var wishList = await _context.Lists
-             .Include(l => l.Items) 
-             .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId, cancellationToken);
+            var listRepository = _unitOfWork.GetRepository<List, int>();
+            var listItemRepository = _unitOfWork.GetRepository<ListItem, int>();
+            
+            var wishListSpec = new WishListSpecification(l => l.Id == id && l.UserId == userId);
+            var wishList = await listRepository.GetWithSpecAsync(wishListSpec);
 
-            if (wishList is null)
+            if (wishList == null)
                 return Result.Failure(WishListErrors.ListNotFound);
 
-            _context.ListItems.RemoveRange(wishList.Items); 
-            _context.Lists.Remove(wishList); 
+            var listItemSpec = new ListItemSpecification(id);
+            var listItems = await listItemRepository.GetAllWithSpecAsync(listItemSpec);
+            foreach (var item in listItems)
+                listItemRepository.Delete(item);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            listRepository.Delete(wishList);
+            await _unitOfWork.CompleteAsync();
 
             return Result.Success();
         }
