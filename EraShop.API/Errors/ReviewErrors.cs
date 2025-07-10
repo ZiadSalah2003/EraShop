@@ -1,6 +1,8 @@
-﻿namespace EraShop.API.Errors
+﻿using EraShop.API.Abstractions;
+
+namespace EraShop.API.Errors
 {
-    public class ReviewErrors
+    public static class ReviewErrors
     {
         public static readonly Error ReviewAlreadyExists =
                  new("Review.ReviewAlreadyExists", "You have already submitted a review for this product", StatusCodes.Status400BadRequest);

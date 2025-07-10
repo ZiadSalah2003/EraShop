@@ -1,10 +1,13 @@
 ﻿using EraShop.API.Abstractions;
 using EraShop.API.Abstractions.Consts;
 using EraShop.API.Contracts.Common;
+using EraShop.API.Contracts.Infrastructure;
 using EraShop.API.Contracts.Products;
 using EraShop.API.Entities;
 using EraShop.API.Errors;
-using EraShop.API.Persistence;
+using EraShop.API.Specification.Brand;
+using EraShop.API.Specification.Category;
+using EraShop.API.Specification.Product;
 using Mapster;
 using System.Linq.Dynamic.Core;
 
@@ -12,115 +15,133 @@ namespace EraShop.API.Services
 {
 	public class ProductService : IProductService
 	{
-		private readonly ApplicationDbContext _context;
+		private readonly IUnitOfWork _unitOfWork;
 		private readonly IFileService _fileService;
 		private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly INotificationService _notificationService;
-		public ProductService(ApplicationDbContext context, IFileService fileService, IHttpContextAccessor httpContextAccessor , INotificationService notificationService)
+        private readonly INotificationService _notificationService;
+		public ProductService(IUnitOfWork unitOfWork, IFileService fileService, IHttpContextAccessor httpContextAccessor , INotificationService notificationService)
 		{
-			_context = context;
+			_unitOfWork = unitOfWork;
 			_fileService = fileService;
 			_httpContextAccessor = httpContextAccessor;
-      _notificationService = notificationService;
-
+            _notificationService = notificationService;
 		}
 		public async Task<PaginatedList<ProductResponse>> GetAllAdync(RequestFilters filters, CancellationToken cancellationToken = default)
 		{
-			var query = _context.Products
-					.Where(c => !c.IsDisable);
+			var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
+			var activeProductsSpec = new ProductSpecification(true);
+			var products = await productRepository.GetAllWithSpecAsync(activeProductsSpec);
+			
+			var filteredProducts = products.AsQueryable();
+			
+			if (!string.IsNullOrEmpty(filters.SearchValue))
+				filteredProducts = filteredProducts.Where(x => x.Name.Contains(filters.SearchValue));
 
-					if (!string.IsNullOrEmpty(filters.SearchValue))
-						query = query.Where(x => x.Name.Contains(filters.SearchValue));
+			if (!string.IsNullOrEmpty(filters.SortColumn))
+				filteredProducts = filteredProducts.OrderBy($"{filters.SortColumn} {filters.SortDirection}");
 
-					if (!string.IsNullOrEmpty(filters.SortColumn))
-						query = query.OrderBy($"{filters.SortColumn} {filters.SortDirection}");
-
-					var products = query
-					.Include(p => p.Brand)
-					.Include(p => p.Category)
-					.ProjectToType<ProductResponse>()
-					.AsNoTracking();
-
-			var response = await PaginatedList<ProductResponse>.CreateAsync(products, filters.PageNumber, filters.PageSize, cancellationToken);
+			var productResponses = filteredProducts.Adapt<IQueryable<ProductResponse>>();
+			var response = await PaginatedList<ProductResponse>.CreateAsync(productResponses, filters.PageNumber, filters.PageSize, cancellationToken);
 			return response;
 		}
 		public async Task<Result<ProductResponse>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
 		{
-			var isExist = await _context.Products.AnyAsync(c => c.Id == id && !c.IsDisable, cancellationToken);
-			if (!isExist)
+			var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
+			var productSpec = new ProductSpecification(id);
+			var product = await productRepository.GetWithSpecAsync(productSpec);
+
+			if (product is null || product.IsDisable)
 				return Result.Failure<ProductResponse>(ProductErrors.ProductNotFound);
 
-			var product = await _context.Products
-							.Where(c => c.Id == id)
-							.Include(p => p.Brand)
-							.Include(p => p.Category)
-							.ProjectToType<ProductResponse>()
-							.FirstOrDefaultAsync(cancellationToken);
-
-			return Result.Success(product!);
+			return Result.Success(product.Adapt<ProductResponse>());
 		}
 		public async Task<Result<ProductResponse>> AddAsync(ProductRequest request, CancellationToken cancellationToken = default)
 		{
-			var isExist = await _context.Products.AnyAsync(c => c.Name == request.Name, cancellationToken);
-			if (isExist)
+			var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
+			var brandRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Brand, int>();
+			var categoryRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Category, int>();
+			
+			var nameSpec = new ProductSpecification(request.Name);
+			var isExist = await productRepository.GetWithSpecAsync(nameSpec);
+			if (isExist != null)
 				return Result.Failure<ProductResponse>(ProductErrors.DublicatedName);
 
-			var brand = await _context.Brands.FindAsync(request.BrandId, cancellationToken);
+			var brandSpec = new BrandSpecification(request.BrandId);
+			var brand = await brandRepository.GetWithSpecAsync(brandSpec);
 			if (brand is null)
 				return Result.Failure<ProductResponse>(BrandErrors.BrandNotFound);
 
-			var category = await _context.Categories.FindAsync(request.CategoryId, cancellationToken);
+			var categorySpec = new CategorySpecification(request.CategoryId);
+			var category = await categoryRepository.GetWithSpecAsync(categorySpec);
 			if (category is null)
 				return Result.Failure<ProductResponse>(CategoryErrors.CategoryNotFound);
 
-			string createdImageName = await _fileService.SaveFileAsync(request.ImageUrl!, ImageSubFolder.Product);
-			var baseUrl = GetBaseUrl();
-			var product = request.Adapt<Product>();
-			product.ImageUrl = $"{baseUrl}{createdImageName}";
+			var uploadResult = await _fileService.UploadToCloudinaryAsync(request.ImageUrl!);
+			if (!uploadResult.IsSuccess)
+				return Result.Failure<ProductResponse>(FileErrors.UploadFailed);
+			
+			var product = request.Adapt<EraShop.API.Entities.Product>();
+			product.ImageUrl = uploadResult.Value.SecureUrl;
 
-			await _context.Products.AddAsync(product, cancellationToken);
-			await _context.SaveChangesAsync(cancellationToken);
+			await productRepository.AddAsync(product, cancellationToken);
+			await _unitOfWork.CompleteAsync();
 
 			await _notificationService.SendNewProductsNotifications(product);
 			return Result.Success(product.Adapt<ProductResponse>());
 		}
 		public async Task<Result> UpdateAsync(int id, ProductRequest request, CancellationToken cancellationToken = default)
 		{
-			var isExist = await _context.Products.AnyAsync(c => c.Name == request.Name && c.Id != id, cancellationToken);
-
-			if (isExist)
+			var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
+			
+			var nameSpec = new ProductSpecification(request.Name);
+			var isExist = await productRepository.GetWithSpecAsync(nameSpec);
+			if (isExist != null && isExist.Id != id)
 				return Result.Failure(ProductErrors.DublicatedName);
 
-			var isDisable = await _context.Products.AnyAsync(c => c.Id == id && !c.IsDisable, cancellationToken);
-			if (!isDisable)
+			var productSpec = new ProductSpecification(id);
+			var product = await productRepository.GetWithSpecAsync(productSpec);
+			if (product is null || product.IsDisable)
 				return Result.Failure(ProductErrors.ProductNotFound);
 
-			var updatedProduct = await _context.Products.FindAsync(id, cancellationToken);
-			if (updatedProduct is null)
-				return Result.Failure(ProductErrors.ProductNotFound);
+			product.Name = request.Name;
+			product.Description = request.Description;
+			product.Price = request.Price;
+			product.Quantity = request.Quantity;
+			product.BrandId = request.BrandId;
+			product.CategoryId = request.CategoryId;
 
-			var product = updatedProduct.Adapt<Product>();
-			await _context.SaveChangesAsync(cancellationToken);
+			if (request.ImageUrl != null)
+			{
+				if (!string.IsNullOrEmpty(product.ImageUrl))
+				{
+					var publicId = _fileService.ExtractPublicIdFromUrl(product.ImageUrl);
+					if (!string.IsNullOrEmpty(publicId))
+						await _fileService.DeleteFromCloudinaryAsync(publicId);
+				}
+				var uploadResult = await _fileService.UploadToCloudinaryAsync(request.ImageUrl);
+				if (!uploadResult.IsSuccess)
+					return Result.Failure(FileErrors.UploadFailed);
+
+				product.ImageUrl = uploadResult.Value.SecureUrl;
+			}
+
+			productRepository.Update(product);
+			await _unitOfWork.CompleteAsync();
 			return Result.Success();
 		}
 		public async Task<Result> ToggleStatus(int id, CancellationToken cancellationToken = default)
 		{
-			var product = await _context.Products.FindAsync(id, cancellationToken);
+			var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
+			var productSpec = new ProductSpecification(id);
+			var product = await productRepository.GetWithSpecAsync(productSpec);
+			
 			if (product is null)
 				return Result.Failure(ProductErrors.ProductNotFound);
 
 			product.IsDisable = !product.IsDisable;
-			_context.Products.Update(product);
-			await _context.SaveChangesAsync(cancellationToken);
+			productRepository.Update(product);
+			await _unitOfWork.CompleteAsync();
 			return Result.Success();
-		}
-		private string GetBaseUrl()
-		{
-			var request = _httpContextAccessor.HttpContext?.Request;
-			if (request == null)
-				throw new InvalidOperationException("HttpContext is not available.");
-
-			return $"{request.Scheme}://{request.Host}/images/Product/";
 		}
 	}
 }

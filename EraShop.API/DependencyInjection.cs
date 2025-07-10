@@ -1,6 +1,8 @@
 ﻿using EraShop.API.Authentication;
+using EraShop.API.Contracts.Infrastructure;
 using EraShop.API.Entities;
 using EraShop.API.Persistence;
+using EraShop.API.Persistence.UnitOfWork;
 using EraShop.API.Services;
 using EraShop.API.Settings;
 using Mapster;
@@ -8,8 +10,6 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
@@ -18,6 +18,7 @@ using StackExchange.Redis;
 using Hangfire;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using EraShop.API.Helpers;
 namespace EraShop.API
 {
 	public static class DependencyInjection
@@ -38,9 +39,11 @@ namespace EraShop.API
 			var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection String DefaultConnection not found.");
 			services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
+			services.AddScoped<IUnitOfWork, UnitOfWork>();
 			services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailSender, EmailService>();
-            services.AddScoped<IFileService, FileService>();
+      			services.AddScoped<IFileService, CloudinaryService>();
+            services.Configure<CloudinarySettings>(configuration.GetSection(CloudinarySettings.SectionName));
             services.AddScoped<IBrandService,BrandService>();
 			services.AddScoped<ICategoryService, CategoryService>();
 			services.AddScoped<IProductService, ProductService>();
