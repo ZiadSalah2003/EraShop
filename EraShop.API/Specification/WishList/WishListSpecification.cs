@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace EraShop.API.Specification.WishList
 {
-    public class WishListSpecification : Specification<EraShop.API.Entities.List, int>
+    public class WishListSpecification : Specification<List, int>
     {
         public WishListSpecification() : base()
         {
@@ -11,7 +11,7 @@ namespace EraShop.API.Specification.WishList
             AddIncludes();
         }
         
-        public WishListSpecification(Expression<Func<EraShop.API.Entities.List, bool>>? expression) : base(expression)
+        public WishListSpecification(Expression<Func<List, bool>>? expression) : base(expression)
         {
             AddOrderBy(l => l.Name);
             AddIncludes();

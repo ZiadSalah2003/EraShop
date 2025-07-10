@@ -76,10 +76,12 @@ namespace EraShop.API.Services
 			if (category is null)
 				return Result.Failure<ProductResponse>(CategoryErrors.CategoryNotFound);
 
-			string createdImageName = await _fileService.SaveFileAsync(request.ImageUrl!, ImageSubFolder.Product);
-			var baseUrl = GetBaseUrl();
+			var uploadResult = await _fileService.UploadToCloudinaryAsync(request.ImageUrl!);
+			if (!uploadResult.IsSuccess)
+				return Result.Failure<ProductResponse>(FileErrors.UploadFailed);
+			
 			var product = request.Adapt<EraShop.API.Entities.Product>();
-			product.ImageUrl = $"{baseUrl}{createdImageName}";
+			product.ImageUrl = uploadResult.Value.SecureUrl;
 
 			await productRepository.AddAsync(product, cancellationToken);
 			await _unitOfWork.CompleteAsync();
@@ -108,6 +110,21 @@ namespace EraShop.API.Services
 			product.BrandId = request.BrandId;
 			product.CategoryId = request.CategoryId;
 
+			if (request.ImageUrl != null)
+			{
+				if (!string.IsNullOrEmpty(product.ImageUrl))
+				{
+					var publicId = _fileService.ExtractPublicIdFromUrl(product.ImageUrl);
+					if (!string.IsNullOrEmpty(publicId))
+						await _fileService.DeleteFromCloudinaryAsync(publicId);
+				}
+				var uploadResult = await _fileService.UploadToCloudinaryAsync(request.ImageUrl);
+				if (!uploadResult.IsSuccess)
+					return Result.Failure(FileErrors.UploadFailed);
+
+				product.ImageUrl = uploadResult.Value.SecureUrl;
+			}
+
 			productRepository.Update(product);
 			await _unitOfWork.CompleteAsync();
 			return Result.Success();
@@ -125,14 +142,6 @@ namespace EraShop.API.Services
 			productRepository.Update(product);
 			await _unitOfWork.CompleteAsync();
 			return Result.Success();
-		}
-		private string GetBaseUrl()
-		{
-			var request = _httpContextAccessor.HttpContext?.Request;
-			if (request == null)
-				throw new InvalidOperationException("HttpContext is not available.");
-
-			return $"{request.Scheme}://{request.Host}/images/Product/";
 		}
 	}
 }

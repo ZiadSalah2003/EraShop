@@ -1,9 +1,14 @@
-﻿namespace EraShop.API.Services
+﻿using EraShop.API.Abstractions;
+using EraShop.API.Contracts.Files;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
+
+namespace EraShop.API.Services
 {
     public interface IFileService
     {
-		public Task<string> SaveFileAsync(IFormFile imageFile, string subfolder);
-		public void DeleteFile(string file, string subfolder);
-
+		Task<Result<FileUploadResponse>> UploadToCloudinaryAsync(IFormFile file);
+		Task<Result> DeleteFromCloudinaryAsync(string publicId);
+		string ExtractPublicIdFromUrl(string url);
 	}
 }

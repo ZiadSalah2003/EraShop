@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace EraShop.API.Specification.Product
 {
-    public class ProductSpecification : Specification<EraShop.API.Entities.Product, int>
+    public class ProductSpecification : Specification<Entities.Product, int>
     {
         public ProductSpecification() : base()
         {
@@ -11,7 +11,7 @@ namespace EraShop.API.Specification.Product
             AddIncludes();
         }
         
-        public ProductSpecification(Expression<Func<EraShop.API.Entities.Product, bool>>? expression) : base(expression)
+        public ProductSpecification(Expression<Func<Entities.Product, bool>>? expression) : base(expression)
         {
             AddOrderBy(p => p.Name);
             AddIncludes();

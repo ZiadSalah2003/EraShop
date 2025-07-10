@@ -18,6 +18,7 @@ using StackExchange.Redis;
 using Hangfire;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using EraShop.API.Helpers;
 namespace EraShop.API
 {
 	public static class DependencyInjection
@@ -41,7 +42,8 @@ namespace EraShop.API
 			services.AddScoped<IUnitOfWork, UnitOfWork>();
 			services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailSender, EmailService>();
-            services.AddScoped<IFileService, FileService>();
+      			services.AddScoped<IFileService, CloudinaryService>();
+            services.Configure<CloudinarySettings>(configuration.GetSection(CloudinarySettings.SectionName));
             services.AddScoped<IBrandService,BrandService>();
 			services.AddScoped<ICategoryService, CategoryService>();
 			services.AddScoped<IProductService, ProductService>();

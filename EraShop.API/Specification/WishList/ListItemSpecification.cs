@@ -3,14 +3,14 @@ using System.Linq.Expressions;
 
 namespace EraShop.API.Specification.WishList
 {
-    public class ListItemSpecification : Specification<EraShop.API.Entities.ListItem, int>
+    public class ListItemSpecification : Specification<ListItem, int>
     {
         public ListItemSpecification() : base()
         {
             AddIncludes();
         }
         
-        public ListItemSpecification(Expression<Func<EraShop.API.Entities.ListItem, bool>>? expression) : base(expression)
+        public ListItemSpecification(Expression<Func<ListItem, bool>>? expression) : base(expression)
         {
             AddIncludes();
         }
