@@ -20,8 +20,8 @@ namespace EraShop.API.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
-            var reviewRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Review, int>();
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var reviewRepository = _unitOfWork.GetRepository<Review, int>();
             
             var productSpec = new ProductSpecification(productId);
             var product = await productRepository.GetWithSpecAsync(productSpec);
@@ -51,8 +51,8 @@ namespace EraShop.API.Services
 
         public async Task<Result<IEnumerable<ReviewResponse>>> GetAllReviewsAsync(int productId, CancellationToken cancellationToken)
         {
-            var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
-            var reviewRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Review, int>();
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var reviewRepository = _unitOfWork.GetRepository<Review, int>();
             
             var productSpec = new ProductSpecification(productId);
             var product = await productRepository.GetWithSpecAsync(productSpec);
@@ -76,8 +76,8 @@ namespace EraShop.API.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
-            var reviewRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Review, int>();
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var reviewRepository = _unitOfWork.GetRepository<Review, int>();
             
             var productSpec = new ProductSpecification(productId);
             var product = await productRepository.GetWithSpecAsync(productSpec);
@@ -103,8 +103,8 @@ namespace EraShop.API.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var productRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Product, int>();
-            var reviewRepository = _unitOfWork.GetRepository<EraShop.API.Entities.Review, int>();
+            var productRepository = _unitOfWork.GetRepository<Product, int>();
+            var reviewRepository = _unitOfWork.GetRepository<Review, int>();
             
             var productSpec = new ProductSpecification(productId);
             var product = await productRepository.GetWithSpecAsync(productSpec);

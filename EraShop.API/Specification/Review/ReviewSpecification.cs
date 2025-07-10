@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace EraShop.API.Specification.Review
 {
-    public class ReviewSpecification : Specification<EraShop.API.Entities.Review, int>
+    public class ReviewSpecification : Specification<Entities.Review, int>
     {
         public ReviewSpecification() : base()
         {
@@ -11,7 +11,7 @@ namespace EraShop.API.Specification.Review
             AddIncludes();
         }
         
-        public ReviewSpecification(Expression<Func<EraShop.API.Entities.Review, bool>>? expression) : base(expression)
+        public ReviewSpecification(Expression<Func<Entities.Review, bool>>? expression) : base(expression)
         {
             AddOrderBy(r => r.Id);
             AddIncludes();
